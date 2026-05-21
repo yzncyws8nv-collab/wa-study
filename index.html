@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bono's L Licence!">
+<meta name="theme-color" content="#0a0e17">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Bono's L Licence!</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body, #root { min-height: 100vh; min-height: -webkit-fill-available; background: #0a0e17; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  button { -webkit-appearance: none; appearance: none; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useCallback, useMemo } = React;
+
+
+const PHASE1_DATA = [
+  {
+    id: "speed", phase: 1, title: "Speed 속도", icon: "⚡",
+    items: [
+      { en: "Speeding is not just driving faster than the speed limit — it is also driving too fast for the road, traffic, visibility or weather conditions.", kr: "과속은 단순히 제한속도를 초과하는 것만이 아니다 — 도로, 교통, 시야, 날씨 조건에 비해 너무 빠르게 운전하는 것도 포함된다." },
+      { en: "It is against the law to drive above the posted speed limit. You will be fined and may accumulate demerit points.", kr: "게시된 제한속도를 초과하여 운전하는 것은 불법이다. 벌금이 부과되며 벌점이 누적될 수 있다." },
+      { en: "Under 'Anti-Hoon' legislation, driving 45km/h or more above the speed limit can result in reckless driving charges, licence suspension, and vehicle impoundment.", kr: "'반사회적 운전(Anti-Hoon)' 법률에 따라 제한속도보다 45km/h 이상 초과 시 난폭운전으로 기소될 수 있고, 면허 정지 및 차량 압류가 가능하다." },
+      { en: "You should drive slower when: the road is busy, road conditions are poor, visibility is poor, or there are pedestrians and cyclists around.", kr: "다음 상황에서는 속도를 줄여야 한다: 도로가 혼잡할 때, 노면 상태가 나쁠 때, 시야가 좋지 않을 때, 보행자와 자전거가 주변에 있을 때." },
+      { en: "The default speed limit in built-up areas (urban areas with street lights) is 50 km/h unless otherwise signed.", kr: "가로등이 있는 시가지(built-up area)의 기본 제한속도는 별도 표지판이 없는 한 50km/h이다." },
+      { en: "The maximum speed limit in Western Australia is 110 km/h unless otherwise signed.", kr: "서호주의 최대 제한속도는 별도 표지판이 없는 한 110km/h이다." },
+      { en: "The highest speed allowable for learner drivers is 100 km/h.", kr: "초보 운전자(Learner)의 최대 허용 속도는 100km/h이다." },
+    ],
+    quiz: [
+      { q: "What is the default speed limit in a built-up area in WA?", qk: "서호주 시가지의 기본 제한속도는?", opts: ["40 km/h", "50 km/h", "60 km/h"], ans: 1, exp: "Built-up areas default to 50 km/h unless otherwise signed.", expk: "시가지는 별도 표지판이 없으면 기본 50km/h이다." },
+      { q: "What speed above the limit triggers 'Anti-Hoon' reckless driving charges?", qk: "Anti-Hoon 법률에 따라 난폭운전으로 기소되는 초과속도는?", opts: ["30 km/h", "40 km/h", "45 km/h"], ans: 2, exp: "45 km/h or more above the posted limit.", expk: "게시된 제한속도보다 45km/h 이상 초과 시." },
+      { q: "What is the maximum speed for a learner driver?", qk: "초보운전자(Learner)의 최대 허용 속도는?", opts: ["80 km/h", "100 km/h", "110 km/h"], ans: 1, exp: "Learner drivers must not exceed 100 km/h.", expk: "초보운전자는 100km/h를 초과할 수 없다." },
+      { q: "Speeding means only driving above the posted speed limit.", qk: "과속이란 게시된 제한속도를 초과하는 것만을 의미한다.", opts: ["True 맞다", "False 틀리다"], ans: 1, exp: "It also means driving too fast for conditions.", expk: "조건에 비해 너무 빠르게 운전하는 것도 과속이다." },
+      { q: "What is the maximum speed limit in WA outside built-up areas?", qk: "WA 시가지 외 지역의 최대 제한속도는?", opts: ["100 km/h", "110 km/h", "120 km/h"], ans: 1, exp: "110 km/h unless otherwise signed.", expk: "별도 표지판이 없으면 110km/h." },
+      { q: "If you have a provisional licence and are caught speeding, what can happen?", qk: "P면허 소지자가 과속으로 적발되면 어떻게 될 수 있는가?", opts: ["Warning only 경고만", "Fine only 벌금만", "Licence cancelled 면허 취소 가능"], ans: 2, exp: "Provisional licence holders could have their licence cancelled.", expk: "P면허 소지자는 면허가 취소될 수 있다." },
+    ]
+  },
+  {
+    id: "alcohol", phase: 1, title: "Alcohol & Drugs 음주·약물", icon: "🚫",
+    items: [
+      { en: "Zero BAC applies to: novice drivers (held licence less than 2 years), drivers of hire vehicles, heavy vehicles, vehicles carrying dangerous goods, and recently disqualified drivers.", kr: "BAC 0.00 적용 대상: 초보 운전자(면허 취득 2년 미만), 고용 차량 운전자, 대형 차량 운전자, 위험물 운반 차량 운전자, 최근 면허 취소 운전자." },
+      { en: "0.05 BAC applies to all other drivers.", kr: "0.05 BAC는 그 외 모든 운전자에게 적용된다." },
+      { en: "A standard drink contains 10 grams of alcohol. One standard drink raises BAC by about 0.01%.", kr: "표준 음주량(Standard Drink)은 알코올 10g을 포함한다. 1잔은 BAC를 약 0.01% 올린다." },
+      { en: "A healthy person takes about one hour to eliminate the alcohol from one standard drink.", kr: "건강한 사람이 표준 음주량 1잔의 알코올을 분해하는 데 약 1시간이 걸린다." },
+      { en: "No amount of coffee or soft drink will sober you up — only time can do that.", kr: "커피나 음료수를 아무리 마셔도 술은 깨지 않는다 — 오직 시간만이 가능하다." },
+      { en: "If you crash while over the BAC limit or impaired by drugs, you will not be covered by insurance.", kr: "BAC 한도를 초과하거나 약물에 의해 운전 능력이 저하된 상태에서 사고를 내면 보험 적용이 되지 않는다." },
+      { en: "It is a serious offence to refuse a random breath test or saliva sample for drug testing.", kr: "무작위 음주 측정이나 약물 검사를 위한 타액 검체 제출을 거부하는 것은 중대한 범죄이다." },
+      { en: "If you have not slept for 17–18 hours, your driving ability equals a BAC of 0.05%.", kr: "17~18시간 수면을 취하지 않으면 운전 능력이 BAC 0.05%와 동일해진다." },
+    ],
+    quiz: [
+      { q: "What BAC limit applies to a novice driver?", qk: "초보 운전자에게 적용되는 BAC 한도는?", opts: ["0.00%", "0.02%", "0.05%"], ans: 0, exp: "Zero BAC for novice drivers (less than 2 years).", expk: "초보 운전자(2년 미만)는 BAC 0.00이 적용된다." },
+      { q: "How long does it take to eliminate one standard drink from your body?", qk: "표준 음주량 1잔을 분해하는 데 걸리는 시간은?", opts: ["30 minutes", "1 hour", "2 hours"], ans: 1, exp: "About one hour per standard drink.", expk: "표준 음주량 1잔당 약 1시간." },
+      { q: "How many grams of alcohol are in one standard drink?", qk: "표준 음주량 1잔에 포함된 알코올은 몇 그램인가?", opts: ["5 grams", "10 grams", "15 grams"], ans: 1, exp: "10 grams of alcohol = 1 standard drink.", expk: "알코올 10g = 표준 음주량 1잔." },
+      { q: "What happens to your insurance if you crash while over the BAC limit?", qk: "BAC 한도 초과 상태에서 사고 시 보험은?", opts: ["Normal coverage 정상 적용", "Not covered 적용 안 됨", "Partial coverage 부분 적용"], ans: 1, exp: "You will NOT be covered by insurance.", expk: "보험 적용이 되지 않는다." },
+      { q: "How long after 4 standard drinks does it take your body to eliminate all the alcohol?", qk: "표준 음주 4잔 후 알코올을 모두 분해하는 데 걸리는 시간은?", opts: ["2 hours", "4 hours", "6 hours"], ans: 1, exp: "About 1 hour per standard drink = 4 hours.", expk: "표준 음주 1잔당 약 1시간 = 4시간." },
+      { q: "What is the BAC limit for a supervising driver teaching a learner?", qk: "초보 운전자를 지도하는 동승 운전자의 BAC 한도는?", opts: ["0.00%", "0.02%", "Same as their own licence type 자기 면허 유형과 동일"], ans: 2, exp: "Same requirements as if they were driving the vehicle.", expk: "직접 운전할 때와 동일한 기준이 적용된다." },
+    ]
+  },
+  {
+    id: "seatbelts", phase: 1, title: "Seat Belts 안전벨트", icon: "🔒",
+    items: [
+      { en: "The driver must ensure each passenger aged 16+ wears a seat belt. Drivers are legally responsible for restraining children under 16.", kr: "운전자는 16세 이상 모든 승객이 안전벨트를 착용하도록 해야 한다. 16세 미만 아동의 구속 장치 착용은 운전자의 법적 책임이다." },
+      { en: "Children 0–6 months: must use a rearward-facing child restraint, always in the rear seat.", kr: "0~6개월: 반드시 후방향 유아용 시트를 사용하며, 항상 뒷좌석에 앉아야 한다." },
+      { en: "Children 6 months to under 4 years: must use either a rearward-facing or forward-facing restraint with inbuilt harness. Must not sit in the front row.", kr: "6개월~4세 미만: 후방향 또는 전방향(내장 하네스) 유아용 시트 사용. 앞좌석 금지." },
+      { en: "Children 4 to under 7 years: must use a forward-facing restraint with harness OR booster seat. Not allowed in front seat unless all rear seats are occupied by children under 7.", kr: "4세~7세 미만: 전방향 하네스 시트 또는 부스터 시트 사용. 뒷좌석이 7세 미만 아동으로 모두 차 있지 않는 한 앞좌석 금지." },
+      { en: "You do NOT have to wear a seat belt if: driving in reverse, have a medical exemption, doing frequent stop-start work under 25 km/h, or are a taxi driver carrying passengers after dark.", kr: "안전벨트 면제 대상: 후진 중, 의료 면제증 소지, 25km/h 이하 빈번한 승하차 작업, 야간 승객 태운 택시 운전사." },
+      { en: "It is illegal to ride in the back of a utility (ute) or open load space, even with a roll-over protection device.", kr: "유틸리티(ute) 뒷짐칸이나 개방 적재 공간에 타는 것은 전복 방지 장치가 있어도 불법이다." },
+      { en: "There are two types of collision: the car collision (vehicle stops) and the human collision (occupants keep moving). Seat belts prevent the human collision.", kr: "충돌에는 두 가지가 있다: 차량 충돌(차가 멈춤)과 인체 충돌(탑승자가 계속 움직임). 안전벨트는 인체 충돌을 방지한다." },
+    ],
+    quiz: [
+      { q: "Up to what age is the driver legally responsible for ensuring children are restrained?", qk: "운전자가 법적으로 아동의 구속 장치 착용 책임을 지는 연령 상한은?", opts: ["12 years", "14 years", "16 years"], ans: 2, exp: "Drivers are responsible for children under 16.", expk: "16세 미만 아동에 대해 운전자가 책임진다." },
+      { q: "Children under 6 months must use which type of restraint?", qk: "6개월 미만 영아는 어떤 유형의 구속 장치를 사용해야 하는가?", opts: ["Forward-facing 전방향", "Rearward-facing 후방향", "Booster seat 부스터"], ans: 1, exp: "Rearward-facing, always in the rear seat.", expk: "후방향 유아용 시트, 항상 뒷좌석." },
+      { q: "Can you ride in the tray of a ute if it has a roll-over protection device?", qk: "전복 방지 장치가 있는 유틸리티 뒷짐칸에 탈 수 있는가?", opts: ["Yes 가능", "No 불가능", "Only in rural areas 시골만 가능"], ans: 1, exp: "It is illegal regardless of roll-over protection.", expk: "전복 방지 장치와 관계없이 불법이다." },
+      { q: "What are the two types of collision in a crash?", qk: "사고에서의 두 가지 충돌 유형은?", opts: ["Front and rear 전면과 후면", "Car collision and human collision 차량 충돌과 인체 충돌", "Head-on and side 정면과 측면"], ans: 1, exp: "Car collision (vehicle stops) and human collision (occupants keep moving).", expk: "차량 충돌(차가 멈춤)과 인체 충돌(탑승자가 계속 움직임)." },
+      { q: "Children 4 to under 7 years can sit in the front seat if:", qk: "4세~7세 미만 아동이 앞좌석에 앉을 수 있는 경우:", opts: ["Always 항상", "All rear seats occupied by children under 7 뒷좌석이 7세 미만으로 가득 찬 경우", "Never 절대 불가"], ans: 1, exp: "Only if all rear seats are occupied by children under 7.", expk: "뒷좌석이 7세 미만 아동으로 모두 차 있을 때만." },
+    ]
+  },
+  {
+    id: "fatigue", phase: 1, title: "Driver Fatigue 피로운전", icon: "😴",
+    items: [
+      { en: "A microsleep lasts 3–5 seconds. At 100 km/h, your vehicle travels over 100 metres in that time.", kr: "미세수면(microsleep)은 3~5초간 지속된다. 100km/h에서 그 시간에 차량은 100m 이상 이동한다." },
+      { en: "You are most at risk of fatigue between midnight and 6am, when your body clock turns alertness down.", kr: "자정부터 오전 6시 사이가 피로 위험이 가장 높다. 체내 시계가 각성도를 낮추기 때문이다." },
+      { en: "If you haven't slept for 17–18 hours, your driving is equivalent to a BAC of 0.05%.", kr: "17~18시간 수면을 못 하면 운전 능력이 BAC 0.05%와 같아진다." },
+      { en: "Shift workers are 6 times more likely to be involved in fatigue-related crashes.", kr: "교대 근무자는 피로 관련 사고에 연루될 확률이 6배 높다." },
+      { en: "The minimum recommended sleep to avoid fatigued driving is 6 hours per night.", kr: "피로운전 방지를 위한 최소 권장 수면 시간은 하루 6시간이다." },
+      { en: "Warning signs: yawning, sore/heavy eyes, daydreaming, wandering vehicle, slow reactions, unintentional speed changes.", kr: "경고 신호: 하품, 눈이 아프거나 무거움, 멍하니 있음, 차가 차선을 벗어남, 반응 느려짐, 속도가 의도 없이 변함." },
+      { en: "Take breaks at least every 2 hours on long trips. Once fatigue sets in, stop immediately.", kr: "장거리 운전 시 최소 2시간마다 휴식. 피로가 오면 즉시 정차해야 한다." },
+    ],
+    quiz: [
+      { q: "How long does a microsleep typically last?", qk: "미세수면(microsleep)은 보통 얼마나 지속되는가?", opts: ["1–2 seconds", "3–5 seconds", "10–15 seconds"], ans: 1, exp: "3 to 5 seconds.", expk: "3~5초간 지속된다." },
+      { q: "Shift workers are how many times more likely to have fatigue-related crashes?", qk: "교대근무자의 피로 관련 사고 위험은 몇 배인가?", opts: ["3 times", "6 times", "10 times"], ans: 1, exp: "6 times more likely.", expk: "6배 더 높다." },
+      { q: "Not sleeping for 17–18 hours is equivalent to what BAC?", qk: "17~18시간 못 자면 어느 BAC 수준과 같은가?", opts: ["0.02%", "0.05%", "0.08%"], ans: 1, exp: "Equivalent to 0.05% BAC.", expk: "BAC 0.05%와 동일하다." },
+      { q: "What is the most dangerous time to drive due to fatigue?", qk: "피로로 인해 가장 위험한 운전 시간대는?", opts: ["Midday 정오", "Midnight to 6am 자정~오전6시", "Evening 저녁"], ans: 1, exp: "Between midnight and 6am when your body clock turns alertness down.", expk: "자정~오전 6시, 체내 시계가 각성도를 낮출 때." },
+      { q: "How often should you take breaks on long trips?", qk: "장거리 운전 시 얼마나 자주 휴식해야 하는가?", opts: ["Every 30 minutes", "Every 2 hours 2시간마다", "Every 4 hours"], ans: 1, exp: "At least every 2 hours.", expk: "최소 2시간마다." },
+    ]
+  },
+  {
+    id: "mobile", phase: 1, title: "Mobile Phones 휴대전화", icon: "📵",
+    items: [
+      { en: "You may only use a mobile phone while driving if it is secured in a mounting affixed to the vehicle, or can be operated without touching it (voice activated).", kr: "운전 중 휴대전화 사용은 차량에 고정된 거치대에 장착되어 있거나, 터치 없이 음성으로 작동 가능한 경우에만 허용된다." },
+      { en: "It is illegal to create, send or look at a text message, video message, email or similar while driving.", kr: "운전 중 문자, 영상 메시지, 이메일 등을 작성하거나 보내거나 보는 것은 불법이다." },
+      { en: "GPS on a phone may be used while driving only if the phone is secured in a mounting and the driver does not touch it.", kr: "휴대전화의 GPS 기능은 거치대에 고정되어 있고 운전자가 터치하지 않는 경우에만 운전 중 사용 가능하다." },
+    ],
+    quiz: [
+      { q: "Can you use your phone's GPS while driving if it's in your hand?", qk: "손에 들고 휴대전화 GPS를 사용하며 운전할 수 있는가?", opts: ["Yes 가능", "No 불가능", "Only briefly 잠깐만 가능"], ans: 1, exp: "Must be in a secured mounting, no touching.", expk: "반드시 거치대에 고정하고, 터치 불가." },
+      { q: "Is it legal to read a text message while stopped at a red light?", qk: "빨간불에 정차 중 문자를 읽는 것이 합법인가?", opts: ["Yes 합법", "No 불법", "Only if quick 빨리 보면 가능"], ans: 1, exp: "Illegal to look at a text while driving — this includes being stopped in traffic.", expk: "운전 중 문자를 보는 것은 불법 — 신호 대기 중 포함." },
+    ]
+  },
+  {
+    id: "pedestrians", phase: 1, title: "Pedestrians & Cyclists 보행자·자전거", icon: "🚶",
+    items: [
+      { en: "You must give way to pedestrians crossing at an intersection in front of your turning vehicle.", kr: "교차로에서 회전 시 앞을 건너는 보행자에게 양보해야 한다." },
+      { en: "You must give way to pedestrians at zebra crossings, children's crossings, and at slip lanes.", kr: "횡단보도, 어린이 횡단보도, 슬립 레인에서 보행자에게 양보해야 한다." },
+      { en: "At children's crossings, you must stop when the crossing attendant extends the flags, and not move until flags are withdrawn.", kr: "어린이 횡단보도에서 교통 안내원이 깃발을 펼치면 반드시 정차하고, 깃발을 거둘 때까지 출발하면 안 된다." },
+      { en: "Cyclists may legally use the whole lane on roads with lane markings. They are allowed to ride two abreast (side-by-side).", kr: "자전거는 차선이 표시된 도로에서 합법적으로 전체 차선을 사용할 수 있다. 나란히 2대가 주행 가능하다." },
+      { en: "When overtaking a cyclist, you must give at least 1 metre clearance from the side of your vehicle.", kr: "자전거를 추월할 때 차량 측면으로부터 최소 1미터 간격을 두어야 한다." },
+    ],
+    quiz: [
+      { q: "How much clearance must you give when overtaking a cyclist?", qk: "자전거 추월 시 최소 간격은?", opts: ["0.5 metre", "1 metre", "1.5 metres"], ans: 1, exp: "At least 1 metre clearance.", expk: "최소 1미터 간격." },
+      { q: "Can cyclists legally ride two abreast?", qk: "자전거가 나란히 2대 주행하는 것은 합법인가?", opts: ["Yes 합법", "No 불법", "Only on bike paths 자전거 도로만"], ans: 0, exp: "Yes, they may ride two abreast.", expk: "예, 나란히 2대 주행이 허용된다." },
+      { q: "Must you give way to pedestrians at a slip lane?", qk: "슬립 레인에서 보행자에게 양보해야 하는가?", opts: ["Yes 양보해야 함", "No 양보 불필요", "Only at zebra crossings 횡단보도만"], ans: 0, exp: "You must give way to pedestrians crossing at a slip lane.", expk: "슬립 레인을 건너는 보행자에게 양보해야 한다." },
+    ]
+  },
+  {
+    id: "following", phase: 1, title: "Following Distance 차간 거리", icon: "📏",
+    items: [
+      { en: "Use the 'Two Second Rule': pick a landmark, and when the vehicle ahead passes it, count 'one thousand and one, one thousand and two'. If you pass it before finishing, you're too close.", kr: "'2초 규칙' 사용: 기준점을 정하고, 앞 차가 통과하면 'one thousand and one, one thousand and two'를 센다. 세기 전에 도달하면 너무 가까운 것이다." },
+      { en: "In wet conditions or poor visibility, increase following distance to at least 4 seconds.", kr: "비오거나 시야가 좋지 않은 조건에서는 차간 거리를 최소 4초 이상으로 늘려야 한다." },
+      { en: "At 60 km/h, a car travelling on a dry road takes approximately 45 metres to stop (including reaction time).", kr: "60km/h에서 건조한 도로 위 차량은 정지하는 데 약 45m가 필요하다 (반응 시간 포함)." },
+      { en: "At 100 km/h on a dry road, stopping distance is approximately 100 metres.", kr: "100km/h에서 건조한 도로의 정지 거리는 약 100m이다." },
+      { en: "Wet roads can double your stopping distance.", kr: "젖은 도로에서는 정지 거리가 2배로 늘어날 수 있다." },
+    ],
+    quiz: [
+      { q: "What is the minimum following distance rule called?", qk: "최소 차간 거리 규칙의 이름은?", opts: ["One Second Rule", "Two Second Rule", "Three Second Rule"], ans: 1, exp: "The Two Second Rule.", expk: "2초 규칙." },
+      { q: "In wet conditions, how long should your following distance be?", qk: "비오는 조건에서 차간 거리는 최소 몇 초인가?", opts: ["2 seconds", "3 seconds", "4 seconds"], ans: 2, exp: "At least 4 seconds in wet/poor visibility.", expk: "비오거나 시야 불량 시 최소 4초." },
+      { q: "What is the approximate stopping distance at 100 km/h on a dry road?", qk: "건조한 도로 100km/h에서 정지 거리는?", opts: ["50 metres", "75 metres", "100 metres"], ans: 2, exp: "Approximately 100 metres.", expk: "약 100m." },
+      { q: "What happens to stopping distance on wet roads?", qk: "젖은 도로에서 정지 거리는 어떻게 변하는가?", opts: ["Same 동일", "Doubles 2배", "Halves 절반"], ans: 1, exp: "Wet roads can double your stopping distance.", expk: "젖은 도로에서 정지 거리가 2배." },
+    ]
+  },
+  {
+    id: "signals", phase: 1, title: "Traffic Signals 신호·표지판", icon: "🚦",
+    items: [
+      { en: "A red traffic light means you must stop behind the stop line. You must remain stopped until a green light appears.", kr: "빨간 신호등은 정지선 뒤에서 멈춰야 한다. 초록불이 켜질 때까지 정지 상태를 유지해야 한다." },
+      { en: "A yellow (amber) light means stop unless you are so close that stopping would cause a crash.", kr: "노란(황색) 불은 정차해야 한다. 단, 이미 너무 가까워서 정차하면 사고가 날 경우는 예외." },
+      { en: "A flashing yellow light means proceed with caution — give way to pedestrians.", kr: "점멸 황색등은 주의하며 진행 — 보행자에게 양보해야 한다." },
+      { en: "A red arrow means you must not turn in the direction of the arrow until it is no longer showing.", kr: "빨간 화살표는 해당 방향으로 회전하면 안 된다. 화살표가 사라질 때까지 대기." },
+      { en: "A STOP sign means you must come to a complete stop and give way to all traffic before proceeding.", kr: "정지(STOP) 표지판은 완전히 멈추고 모든 교통에 양보한 후 진행해야 한다." },
+      { en: "A GIVE WAY sign means you must slow down and be prepared to stop to give way to all other traffic.", kr: "양보(GIVE WAY) 표지판은 속도를 줄이고 다른 모든 교통에 양보할 준비를 해야 한다." },
+      { en: "You must indicate for at least 5 seconds before changing lanes on roads with a speed limit over 80 km/h.", kr: "제한속도 80km/h 초과 도로에서 차선 변경 시 최소 5초 전에 방향지시등을 켜야 한다." },
+    ],
+    quiz: [
+      { q: "What does a yellow (amber) traffic light mean?", qk: "노란(황색) 신호등의 의미는?", opts: ["Speed up 가속", "Stop unless unsafe to do so 정지(위험하지 않은 한)", "Give way 양보"], ans: 1, exp: "Stop unless you're so close that stopping would cause a crash.", expk: "정차하면 사고가 날 정도로 가까운 경우를 제외하고 정지." },
+      { q: "What must you do at a STOP sign?", qk: "STOP 표지판에서 해야 할 일은?", opts: ["Slow down 감속", "Complete stop 완전 정지", "Proceed if clear 비어있으면 통과"], ans: 1, exp: "Complete stop, then give way to all traffic.", expk: "완전히 정지 후 모든 교통에 양보." },
+      { q: "What does a flashing yellow traffic light mean?", qk: "점멸 황색 신호등의 의미는?", opts: ["Stop 정지", "Proceed with caution, give way to pedestrians 주의 진행, 보행자 양보", "Speed up 가속"], ans: 1, exp: "Proceed with caution — give way to pedestrians.", expk: "주의하며 진행 — 보행자에게 양보." },
+      { q: "Can you turn on a red arrow?", qk: "빨간 화살표에서 회전할 수 있는가?", opts: ["Yes 가능", "No 불가능", "If clear 비어있으면 가능"], ans: 1, exp: "Must not turn until the red arrow is no longer showing.", expk: "빨간 화살표가 사라질 때까지 회전 금지." },
+    ]
+  },
+  {
+    id: "intersections", phase: 1, title: "Intersections 교차로·로터리", icon: "🔄",
+    items: [
+      { en: "At an uncontrolled intersection (no signs/signals), give way to any vehicle approaching from your right.", kr: "표지판이나 신호가 없는 교차로에서는 오른쪽에서 접근하는 차량에 양보해야 한다." },
+      { en: "At a roundabout, you must give way to all vehicles already in the roundabout.", kr: "로터리에서는 이미 로터리 안에 있는 모든 차량에 양보해야 한다." },
+      { en: "When turning left at a roundabout: signal left as you approach, stay in the left lane, signal left as you exit.", kr: "로터리에서 좌회전: 접근 시 좌측 방향지시등, 좌측 차선 유지, 나갈 때 좌측 방향지시등." },
+      { en: "When going straight through a roundabout: no signal on approach, signal left as you pass the exit before yours.", kr: "로터리 직진: 진입 시 방향지시등 불필요, 자신의 출구 바로 전 출구를 지날 때 좌측 방향지시등." },
+      { en: "When turning right at a roundabout: signal right on approach, signal left as you pass the exit before yours.", kr: "로터리에서 우회전: 접근 시 우측 방향지시등, 자신의 출구 바로 전 출구를 지날 때 좌측 방향지시등으로 변경." },
+      { en: "When two vehicles approach an uncontrolled T-intersection, the vehicle on the terminating road must give way.", kr: "비제어 T자 교차로에서는 끝나는 도로(줄기 도로)에 있는 차량이 양보해야 한다." },
+      { en: "If turning right, you must give way to oncoming vehicles going straight or turning left.", kr: "우회전 시 직진하거나 좌회전하는 대향 차량에 양보해야 한다." },
+    ],
+    quiz: [
+      { q: "At an uncontrolled intersection, who do you give way to?", qk: "비제어 교차로에서 누구에게 양보하는가?", opts: ["Vehicle from the left 왼쪽 차", "Vehicle from the right 오른쪽 차", "No one 아무도"], ans: 1, exp: "Give way to vehicles approaching from your right.", expk: "오른쪽에서 접근하는 차량에 양보." },
+      { q: "At a roundabout, who has right of way?", qk: "로터리에서 우선권은 누구에게 있는가?", opts: ["Vehicles entering 진입 차량", "Vehicles already inside 이미 안에 있는 차량", "Larger vehicles 큰 차량"], ans: 1, exp: "Vehicles already in the roundabout.", expk: "이미 로터리 안에 있는 차량." },
+      { q: "When exiting a roundabout, which signal do you use?", qk: "로터리에서 나갈 때 어떤 방향지시등을 사용하는가?", opts: ["Right 우측", "Left 좌측", "No signal 없음"], ans: 1, exp: "Signal left when exiting.", expk: "나갈 때 좌측 방향지시등." },
+      { q: "At a T-intersection, who must give way?", qk: "T자 교차로에서 누가 양보해야 하는가?", opts: ["Vehicle on the through road 통과 도로 차량", "Vehicle on the terminating road 끝나는 도로 차량", "The larger vehicle 큰 차량"], ans: 1, exp: "The vehicle on the terminating road must give way.", expk: "끝나는 도로(줄기 도로) 차량이 양보." },
+      { q: "When turning right, who must you give way to?", qk: "우회전 시 누구에게 양보해야 하는가?", opts: ["Nobody 아무도", "Oncoming vehicles going straight or turning left 직진·좌회전 대향 차량", "Only pedestrians 보행자만"], ans: 1, exp: "Give way to oncoming vehicles going straight or turning left.", expk: "직진하거나 좌회전하는 대향 차량에 양보." },
+    ]
+  },
+  {
+    id: "overtaking", phase: 1, title: "Overtaking & Lanes 추월·차선", icon: "🛣️",
+    items: [
+      { en: "You must keep left on any multi-lane road with a speed limit of 90 km/h or more, unless overtaking or turning right.", kr: "제한속도 90km/h 이상인 다차선 도로에서는 추월이나 우회전을 할 때를 제외하고 좌측 차선을 유지해야 한다." },
+      { en: "You must not overtake when approaching a crest, curve, or any place where your view is restricted.", kr: "언덕 꼭대기, 커브, 시야가 제한된 곳에 접근할 때는 추월하면 안 된다." },
+      { en: "You must not cross an unbroken centre line (solid line) to overtake.", kr: "추월을 위해 실선(비점선) 중앙선을 넘으면 안 된다." },
+      { en: "When being overtaken, do not increase your speed. Keep left to allow the vehicle to pass safely.", kr: "추월당할 때 속도를 높이면 안 된다. 좌측으로 유지하여 안전하게 통과하도록 해야 한다." },
+    ],
+    quiz: [
+      { q: "On a multi-lane road of 90 km/h or more, which lane must you use?", qk: "90km/h 이상 다차선 도로에서 어느 차선을 사용해야 하는가?", opts: ["Right lane 우측", "Left lane 좌측", "Any lane 아무 차선"], ans: 1, exp: "Keep left unless overtaking or turning right.", expk: "추월이나 우회전 외에는 좌측 차선 유지." },
+      { q: "Can you cross an unbroken centre line to overtake?", qk: "실선 중앙선을 넘어 추월할 수 있는가?", opts: ["Yes 가능", "No 불가능", "Only in emergency 긴급 시만"], ans: 1, exp: "You must NOT cross an unbroken centre line.", expk: "실선 중앙선을 넘으면 안 된다." },
+      { q: "When being overtaken, should you speed up?", qk: "추월당할 때 가속해야 하는가?", opts: ["Yes 가속", "No, keep left 아니요, 좌측 유지", "Match their speed 같은 속도 맞추기"], ans: 1, exp: "Do not increase speed. Keep left to let them pass.", expk: "속도를 높이지 않고 좌측으로 유지." },
+    ]
+  },
+  {
+    id: "parking", phase: 1, title: "Parking 주차·정차", icon: "🅿️",
+    items: [
+      { en: "You must not park within 1 metre of a fire hydrant or fire plug.", kr: "소화전으로부터 1m 이내에 주차하면 안 된다." },
+      { en: "You must not park within 10 metres of an intersection (unless there is a sign allowing it).", kr: "교차로로부터 10m 이내에 주차하면 안 된다 (허용 표지판이 없는 한)." },
+      { en: "You must not park within 20 metres of an intersection with traffic lights.", kr: "신호등이 있는 교차로로부터 20m 이내에 주차하면 안 된다." },
+      { en: "You must not park within 3 metres of a post box (unless stopping to post a letter).", kr: "우체통으로부터 3m 이내에 주차하면 안 된다 (편지를 부치기 위한 정차 제외)." },
+      { en: "You must not park on or within 20 metres before a pedestrian crossing, or 10 metres after.", kr: "횡단보도 위 또는 횡단보도 전 20m, 후 10m 이내에 주차하면 안 된다." },
+      { en: "You must not double park (park beside another parked vehicle).", kr: "이중 주차(다른 주차 차량 옆에 주차)를 하면 안 된다." },
+      { en: "When parallel parking, your vehicle must be within 300mm (30cm) of the kerb.", kr: "평행주차 시 차량은 연석으로부터 300mm(30cm) 이내에 위치해야 한다." },
+    ],
+    quiz: [
+      { q: "How close can you park to an intersection without traffic lights?", qk: "신호등 없는 교차로에 얼마나 가까이 주차할 수 있는가?", opts: ["5 metres", "10 metres", "20 metres"], ans: 1, exp: "Not within 10 metres.", expk: "10m 이내 주차 금지." },
+      { q: "How far must you park from an intersection WITH traffic lights?", qk: "신호등 있는 교차로로부터 최소 몇 미터 떨어져야 하는가?", opts: ["10 metres", "15 metres", "20 metres"], ans: 2, exp: "Not within 20 metres.", expk: "20m 이내 주차 금지." },
+      { q: "When parallel parking, how close to the kerb must you be?", qk: "평행주차 시 연석과의 최대 거리는?", opts: ["100mm", "200mm", "300mm"], ans: 2, exp: "Within 300mm (30cm) of the kerb.", expk: "연석으로부터 300mm(30cm) 이내." },
+      { q: "How far from a post box must you not park?", qk: "우체통으로부터 주차 금지 거리는?", opts: ["1 metre", "3 metres", "5 metres"], ans: 1, exp: "Not within 3 metres (unless posting a letter).", expk: "3m 이내 주차 금지(편지 부치기 제외)." },
+      { q: "Is double parking (parking beside a parked car) legal?", qk: "이중주차(주차된 차 옆에 주차)는 합법인가?", opts: ["Yes 합법", "No 불법", "Only briefly 잠깐만 가능"], ans: 1, exp: "Double parking is illegal.", expk: "이중주차는 불법이다." },
+    ]
+  },
+  {
+    id: "emergency", phase: 1, title: "Emergencies 비상상황", icon: "🚨",
+    items: [
+      { en: "If your brakes fail: pump the brake pedal rapidly, shift to a lower gear, use the handbrake gently, look for something soft to steer into.", kr: "브레이크 고장 시: 페달을 빠르게 반복 밟기, 저단 기어로 변속, 핸드브레이크를 부드럽게, 부드러운 곳으로 방향 전환." },
+      { en: "In a tyre blow-out: grip the steering wheel firmly, do NOT brake suddenly, ease off the accelerator, steer straight.", kr: "타이어 파열 시: 핸들을 단단히 잡고, 급브레이크 금지, 가속기에서 발을 떼고, 직진 유지." },
+      { en: "When passing emergency vehicles with flashing lights, you must slow down to 40 km/h.", kr: "비상등을 켠 긴급 차량을 지나갈 때는 40km/h로 감속해야 한다." },
+      { en: "If stalled on a railway crossing: get all passengers out immediately, move away from the vehicle and the tracks.", kr: "철도 건널목에서 시동이 꺼지면: 모든 승객을 즉시 내리게 하고, 차량과 선로에서 멀리 이동." },
+      { en: "If your vehicle contacts fallen power lines: stay in the vehicle, warn others to stay away, call 000.", kr: "차량이 떨어진 전선에 닿은 경우: 차 안에 머물기, 다른 사람에게 접근 금지 경고, 000에 전화." },
+    ],
+    quiz: [
+      { q: "What speed must you slow to when passing emergency vehicles with flashing lights?", qk: "비상등을 켠 긴급차량 옆을 지날 때 감속 속도는?", opts: ["20 km/h", "40 km/h", "60 km/h"], ans: 1, exp: "You must slow down to 40 km/h.", expk: "40km/h로 감속." },
+      { q: "What should you do first in a tyre blow-out?", qk: "타이어 파열 시 가장 먼저 해야 할 것은?", opts: ["Brake hard 급브레이크", "Grip the wheel firmly 핸들 꽉 잡기", "Speed up 가속"], ans: 1, exp: "Grip the steering wheel firmly, do NOT brake suddenly.", expk: "핸들을 단단히 잡고, 급브레이크 금지." },
+      { q: "If your car contacts fallen power lines, what should you do?", qk: "떨어진 전선에 차가 닿으면 어떻게 해야 하는가?", opts: ["Get out immediately 즉시 하차", "Stay in the vehicle 차 안에 머물기", "Try to drive away 운전해서 벗어나기"], ans: 1, exp: "Stay in the vehicle and call 000.", expk: "차 안에 머물고 000에 전화." },
+      { q: "If your brakes fail, what should you do first?", qk: "브레이크 고장 시 가장 먼저 해야 할 것은?", opts: ["Turn off engine 시동 끄기", "Pump brake pedal rapidly 브레이크 페달 반복 밟기", "Open the door 문 열기"], ans: 1, exp: "Pump the brake pedal rapidly to build pressure.", expk: "브레이크 페달을 빠르게 반복 밟아 압력을 높인다." },
+    ]
+  },
+  {
+    id: "demerit", phase: 1, title: "Demerit Points 벌점", icon: "⚖️",
+    items: [
+      { en: "Full licence holders: 12 or more demerit points within 3 years = licence suspension for 3 months.", kr: "정식 면허: 3년 내 12점 이상 = 3개월 면허 정지." },
+      { en: "Learner and P1 drivers: 4 or more demerit points = licence suspension for 3 months.", kr: "초보(L)와 P1: 4점 이상 = 3개월 면허 정지." },
+      { en: "P2 drivers: 8 or more demerit points = licence suspension.", kr: "P2: 8점 이상 = 면허 정지." },
+      { en: "You must notify DVS within 21 days of any change of address.", kr: "주소 변경 시 21일 이내에 DVS에 통보해야 한다." },
+      { en: "Tyre tread must be at least 1.5mm deep.", kr: "타이어 트레드는 최소 1.5mm 깊이여야 한다." },
+      { en: "Anti-Hoon: 1st = 48h impound. 2nd = up to 3 months + suspension. 3rd = confiscation + permanent disqualification.", kr: "Anti-Hoon: 1차=48시간 압류, 2차=최대 3개월+면허정지, 3차=몰수+영구취소." },
+    ],
+    quiz: [
+      { q: "How many demerit points lead to suspension for a Learner/P1 driver?", qk: "초보/P1 운전자는 몇 점이면 면허 정지인가?", opts: ["2 points", "4 points", "8 points"], ans: 1, exp: "4 or more demerit points.", expk: "4점 이상." },
+      { q: "How many days to notify DVS of an address change?", qk: "주소 변경 통보 기한은?", opts: ["7 days", "14 days", "21 days"], ans: 2, exp: "Within 21 days.", expk: "21일 이내." },
+      { q: "What is the demerit point limit for a P2 driver?", qk: "P2 운전자의 벌점 한도는?", opts: ["4 points", "8 points", "12 points"], ans: 1, exp: "8 or more demerit points = suspension.", expk: "8점 이상 = 면허 정지." },
+      { q: "What happens on a 2nd Anti-Hoon offence?", qk: "Anti-Hoon 2차 위반 시 어떻게 되는가?", opts: ["48 hour impound 48시간 압류", "Up to 3 months impound + suspension 최대 3개월 압류+정지", "Vehicle confiscation 차량 몰수"], ans: 1, exp: "Up to 3 months impoundment + licence suspension.", expk: "최대 3개월 압류 + 면허 정지." },
+    ]
+  },
+  {
+    id: "licence", phase: 1, title: "Licence System 면허 체계", icon: "🪪",
+    items: [
+      { en: "Minimum age for a learner's permit (C class) is 16. Permits are valid for 3 years.", kr: "C클래스 임시면허 최소 연령은 16세. 유효 기간 3년." },
+      { en: "You must complete 50 hours supervised driving (including 5 at night) before the practical test.", kr: "실기 시험 전 50시간 지도 운전(야간 5시간 포함) 이수 필수." },
+      { en: "Learner drivers aged 25+ are exempt from the Log Book requirement.", kr: "25세 이상 초보 운전자는 로그북 면제." },
+      { en: "The supervising driver must have held a full licence for at least 4 years (2 years for mopeds).", kr: "지도 운전자는 정식 면허 최소 4년 보유(모페드는 2년)." },
+      { en: "Learner drivers must display 'L' plates on front and rear of the vehicle.", kr: "초보 운전자는 차량 앞뒤에 L 플레이트 부착 필수." },
+      { en: "Learner drivers cannot drive in Kings Park or where signs prohibit learner drivers.", kr: "초보 운전자는 Kings Park 및 초보 운전 금지 구역에서 운전 불가." },
+      { en: "A novice driver has zero BAC limit until they have held a licence for at least 2 years.", kr: "초보 운전자는 면허 취득 후 최소 2년까지 BAC 0.00 적용." },
+    ],
+    quiz: [
+      { q: "How many hours of supervised driving are required?", qk: "필요한 지도 운전 시간은?", opts: ["25 hours", "50 hours", "100 hours"], ans: 1, exp: "50 hours, including 5 at night.", expk: "50시간(야간 5시간 포함)." },
+      { q: "At what age are learners exempt from the Log Book?", qk: "몇 세 이상이면 로그북 면제인가?", opts: ["21", "23", "25"], ans: 2, exp: "25 years and above.", expk: "25세 이상." },
+      { q: "How long must a supervising driver have held their licence?", qk: "지도 운전자의 면허 보유 기간 요건은?", opts: ["2 years", "3 years", "4 years"], ans: 2, exp: "At least 4 years.", expk: "최소 4년." },
+      { q: "Can a learner drive in Kings Park?", qk: "초보 운전자가 Kings Park에서 운전할 수 있는가?", opts: ["Yes 가능", "No 불가능", "With instructor only 교관 동반 시만"], ans: 1, exp: "Learner drivers cannot drive in Kings Park.", expk: "초보 운전자는 Kings Park에서 운전 불가." },
+      { q: "How long is a learner's permit valid?", qk: "임시면허(Learner's Permit)의 유효 기간은?", opts: ["1 year", "2 years", "3 years"], ans: 2, exp: "Valid for 3 years.", expk: "3년간 유효." },
+    ]
+  },
+];
+
+const PHASE2_DATA = [
+  {
+    id: "nightwet", phase: 2, title: "Night & Wet Driving 야간·우천", icon: "🌧️",
+    items: [
+      { en: "At night, use low beam when following within 200 metres of another vehicle, or when an oncoming vehicle is within 200 metres.", kr: "야간에 앞 차를 200m 이내에서 따라가거나, 대향 차량이 200m 이내일 때는 하향등을 사용해야 한다." },
+      { en: "If blinded by oncoming headlights, slow down or stop, look to the left edge of the road to help guide you.", kr: "대향 차량의 전조등에 눈이 부시면 감속 또는 정지하고, 도로 왼쪽 가장자리를 보며 방향을 잡아라." },
+      { en: "In fog or smoke, use low beam headlights (NOT high beam). High beam reflects off fog and reduces visibility further.", kr: "안개나 연기 속에서는 하향등 사용(상향등 금지). 상향등은 안개에 반사되어 시야를 더 악화시킨다." },
+      { en: "In wet weather, reduce speed and increase following distance. Roads are most slippery in the first 30 minutes of rain.", kr: "비올 때 감속하고 차간 거리를 늘려라. 비가 시작된 후 첫 30분이 도로가 가장 미끄럽다." },
+      { en: "If you encounter water across the road and cannot see the bottom or road markings, do not attempt to cross.", kr: "도로 위 물이 있는데 바닥이나 노면 표시가 보이지 않으면 건너려 하지 마라." },
+      { en: "Country roads may have unsealed sections, animals, and limited lighting. Reduce speed and stay alert.", kr: "시골 도로에는 비포장 구간, 동물, 조명 부족이 있을 수 있다. 감속하고 주의를 기울여라." },
+    ],
+    quiz: [
+      { q: "When must you use low beam instead of high beam at night?", qk: "야간에 하향등을 사용해야 하는 때는?", opts: ["Within 200m of another vehicle 다른 차 200m 이내", "Always at night 항상", "Only in fog 안개 시만"], ans: 0, exp: "Within 200 metres of another vehicle (following or oncoming).", expk: "다른 차를 200m 이내에서 따라가거나 마주 올 때." },
+      { q: "Should you use high beam in fog?", qk: "안개에서 상향등을 사용해야 하는가?", opts: ["Yes 사용", "No, use low beam 하향등 사용", "Either is fine 아무거나"], ans: 1, exp: "No — high beam reflects off fog. Use low beam.", expk: "상향등은 안개에 반사된다. 하향등 사용." },
+      { q: "When are roads most slippery during rain?", qk: "비 올 때 도로가 가장 미끄러운 시간은?", opts: ["After 1 hour 1시간 후", "First 30 minutes 첫 30분", "When rain stops 비 그친 후"], ans: 1, exp: "The first 30 minutes of rain.", expk: "비 시작 후 첫 30분." },
+      { q: "If blinded by oncoming headlights, what should you do?", qk: "대향 차량 전조등에 눈이 부시면 어떻게 해야 하는가?", opts: ["Flash your high beam back 상향등으로 응수", "Slow down, look at left edge 감속, 왼쪽 가장자리 보기", "Close your eyes briefly 눈 잠깐 감기"], ans: 1, exp: "Slow down or stop, look to the left edge of the road.", expk: "감속 또는 정지, 도로 왼쪽 가장자리를 본다." },
+    ]
+  },
+  {
+    id: "railway", phase: 2, title: "Railway Crossings 철도건널목", icon: "🚂",
+    items: [
+      { en: "You must stop at a railway crossing when: warning lights are flashing, boom gates are down or moving, a train is approaching, or a STOP sign is displayed.", kr: "다음 경우 철도 건널목에서 정지: 경고등 점멸, 차단기가 내려가거나 움직이는 중, 기차가 접근, STOP 표지판이 있을 때." },
+      { en: "Do not enter a railway crossing unless there is room for your vehicle on the other side.", kr: "건널목 반대편에 차량이 들어갈 공간이 없으면 진입하지 마라." },
+      { en: "After a train has passed, wait for warning lights to stop flashing and boom gates to fully rise before crossing.", kr: "기차가 통과한 후, 경고등이 멈추고 차단기가 완전히 올라갈 때까지 기다려야 한다." },
+      { en: "If stalled on a railway crossing, get everyone out immediately and move well away from the tracks.", kr: "철도 건널목에서 시동이 꺼지면 모든 사람을 즉시 내리고 선로에서 멀리 이동해야 한다." },
+    ],
+    quiz: [
+      { q: "When must you stop at a railway crossing?", qk: "철도 건널목에서 정지해야 하는 경우는?", opts: ["Only with a STOP sign STOP 표지판만", "When lights flash or gates move 등 점멸 또는 차단기 움직일 때", "Only when a train is visible 기차가 보일 때만"], ans: 1, exp: "When lights are flashing, gates are moving, a train approaches, or a STOP sign.", expk: "경고등 점멸, 차단기 움직임, 기차 접근, STOP 표지판." },
+      { q: "After a train passes, when can you cross?", qk: "기차가 통과한 후 언제 건널 수 있는가?", opts: ["Immediately 즉시", "When lights stop and gates fully rise 경고등 멈추고 차단기 완전 상승 시", "After 10 seconds 10초 후"], ans: 1, exp: "Wait for lights to stop flashing and gates to fully rise.", expk: "경고등이 멈추고 차단기가 완전히 올라갈 때까지 대기." },
+    ]
+  },
+  {
+    id: "freeway", phase: 2, title: "Freeway Driving 고속도로", icon: "🏎️",
+    items: [
+      { en: "When entering a freeway, use the acceleration lane to match the speed of traffic before merging.", kr: "고속도로 진입 시 합류 전에 가속 차선에서 교통 속도에 맞춰야 한다." },
+      { en: "You must not stop on a freeway except in an emergency or when traffic requires it.", kr: "고속도로에서는 비상시 또는 교통 상황이 요구하는 경우를 제외하고 정차하면 안 된다." },
+      { en: "You must not reverse on a freeway.", kr: "고속도로에서 후진하면 안 된다." },
+      { en: "You must not make a U-turn on a freeway.", kr: "고속도로에서 유턴하면 안 된다." },
+      { en: "Pedestrians, cyclists, animals, and learner drivers on mopeds are not allowed on freeways.", kr: "보행자, 자전거, 동물, 모페드 초보 운전자는 고속도로에서 허용되지 않는다." },
+      { en: "When leaving a freeway, signal left and move into the deceleration lane early. Do not slow down on the main carriageway.", kr: "고속도로를 나갈 때 일찍 좌측 방향지시등을 켜고 감속 차선으로 이동. 본선에서 감속하지 마라." },
+    ],
+    quiz: [
+      { q: "What must you do in the acceleration lane when entering a freeway?", qk: "고속도로 가속 차선에서 해야 할 일은?", opts: ["Stop and wait 정지 후 대기", "Match traffic speed 교통 속도에 맞추기", "Drive slowly 천천히 주행"], ans: 1, exp: "Match the speed of traffic before merging.", expk: "합류 전 교통 속도에 맞춘다." },
+      { q: "Can you make a U-turn on a freeway?", qk: "고속도로에서 유턴이 가능한가?", opts: ["Yes 가능", "No 불가능", "Only at exits 출구에서만"], ans: 1, exp: "You must NOT make a U-turn on a freeway.", expk: "고속도로 유턴은 불법이다." },
+      { q: "Where should you slow down when leaving a freeway?", qk: "고속도로를 나갈 때 어디에서 감속해야 하는가?", opts: ["On the main carriageway 본선에서", "In the deceleration lane 감속 차선에서", "After the exit 출구 후"], ans: 1, exp: "In the deceleration lane, not on the main carriageway.", expk: "감속 차선에서. 본선에서 감속하면 안 된다." },
+      { q: "Can a learner driver on a moped use a freeway?", qk: "모페드 초보 운전자가 고속도로를 이용할 수 있는가?", opts: ["Yes 가능", "No 불가능"], ans: 1, exp: "Learner drivers on mopeds are not allowed on freeways.", expk: "모페드 초보 운전자는 고속도로 이용 불가." },
+    ]
+  },
+  {
+    id: "uturn", phase: 2, title: "Turning & U-turns 회전·유턴", icon: "↩️",
+    items: [
+      { en: "You must not make a U-turn at traffic lights unless there is a specific 'U-turn permitted' sign.", kr: "신호등이 있는 곳에서는 'U-turn 허용' 표지판이 없는 한 유턴하면 안 된다." },
+      { en: "You must not make a U-turn over a continuous (unbroken) centre line.", kr: "실선 중앙선 위에서 유턴하면 안 된다." },
+      { en: "When turning left, keep as close to the left as possible. When turning right, approach from as close to the centre of the road as possible.", kr: "좌회전 시 가능한 좌측에 붙고, 우회전 시 도로 중앙에 최대한 가깝게 접근해야 한다." },
+      { en: "You must signal your intention to turn for long enough to warn other road users.", kr: "다른 도로 이용자에게 충분히 경고할 만큼 오래 방향지시등을 켜야 한다." },
+      { en: "When turning at a multi-lane intersection, you must finish your turn in the same lane you started in.", kr: "다차선 교차로에서 회전 시 출발한 차선과 같은 차선에서 회전을 마쳐야 한다." },
+    ],
+    quiz: [
+      { q: "Can you make a U-turn at traffic lights?", qk: "신호등에서 유턴이 가능한가?", opts: ["Always 항상", "Never 절대 안 됨", "Only with a 'U-turn permitted' sign 허용 표지판 있을 때만"], ans: 2, exp: "Only when a 'U-turn permitted' sign is displayed.", expk: "'유턴 허용' 표지판이 있을 때만." },
+      { q: "Can you U-turn over a solid centre line?", qk: "실선 중앙선 위에서 유턴할 수 있는가?", opts: ["Yes 가능", "No 불가능", "If no traffic 차가 없으면 가능"], ans: 1, exp: "You must NOT U-turn over an unbroken centre line.", expk: "실선 중앙선 위에서 유턴 금지." },
+      { q: "When turning at a multi-lane intersection, which lane must you finish in?", qk: "다차선 교차로에서 회전 시 어느 차선에서 끝나야 하는가?", opts: ["Any lane 아무 차선", "Same lane you started in 출발한 차선과 같은 차선", "The left lane 좌측 차선"], ans: 1, exp: "Finish in the same lane you started in.", expk: "출발한 차선과 같은 차선에서 마쳐야 한다." },
+    ]
+  },
+  {
+    id: "crash", phase: 2, title: "Crash Procedures 사고 절차", icon: "💥",
+    items: [
+      { en: "If involved in a crash causing injury: you must stop immediately, render assistance, call 000, and report to police.", kr: "부상을 동반한 사고 시: 즉시 정지, 도움 제공, 000에 전화, 경찰에 신고해야 한다." },
+      { en: "If involved in a crash causing property damage: you must stop, exchange details with the other driver (name, address, registration).", kr: "재산 피해 사고 시: 정차하고 상대 운전자와 정보(이름, 주소, 차량번호)를 교환해야 한다." },
+      { en: "If the other driver is not present, you must leave your details in a visible place on the vehicle.", kr: "상대 운전자가 부재 시, 상대 차량의 보이는 곳에 본인 연락처를 남겨야 한다." },
+      { en: "You must report a crash to police within 24 hours if anyone is injured, or if the other driver fails to exchange details.", kr: "부상자가 있거나 상대 운전자가 정보 교환을 거부하면 24시간 이내에 경찰에 신고해야 한다." },
+      { en: "Do not move injured people unless they are in immediate danger (e.g. fire). Moving them could worsen injuries.", kr: "즉각적인 위험(예: 화재)이 없는 한 부상자를 옮기지 마라. 부상이 악화될 수 있다." },
+      { en: "At a crash scene: turn off engines, apply hazard lights, use warning triangles if available, keep bystanders away.", kr: "사고 현장에서: 시동 끄기, 비상등 켜기, 삼각대 설치(가능하면), 구경꾼 통제." },
+      { en: "First aid priority: DRABC — Danger, Response, Airway, Breathing, Circulation (CPR if needed).", kr: "응급 처치 우선순위: DRABC — 위험, 반응, 기도, 호흡, 순환(필요 시 CPR)." },
+    ],
+    quiz: [
+      { q: "Within how many hours must you report a crash with injuries to police?", qk: "부상이 있는 사고를 경찰에 신고해야 하는 기한은?", opts: ["12 hours", "24 hours", "48 hours"], ans: 1, exp: "Within 24 hours.", expk: "24시간 이내." },
+      { q: "If the other driver is not present after a property-damage crash, what must you do?", qk: "재산 피해 사고 후 상대 운전자가 없으면 어떻게 해야 하는가?", opts: ["Drive away 떠나기", "Leave your details on their vehicle 차에 연락처 남기기", "Call police immediately 즉시 경찰 신고"], ans: 1, exp: "Leave your details in a visible place on their vehicle.", expk: "상대 차량의 보이는 곳에 연락처를 남긴다." },
+      { q: "What is the first aid priority sequence?", qk: "응급 처치 우선순위 순서는?", opts: ["ABC", "DRABC", "CPR first"], ans: 1, exp: "DRABC: Danger, Response, Airway, Breathing, Circulation.", expk: "DRABC: 위험, 반응, 기도, 호흡, 순환." },
+      { q: "Should you move an injured person after a crash?", qk: "사고 후 부상자를 옮겨야 하는가?", opts: ["Yes always 항상", "No, unless in immediate danger 즉각 위험이 아니면 안 됨", "Only if bleeding 출혈 시만"], ans: 1, exp: "Do not move unless in immediate danger (e.g. fire).", expk: "즉각적 위험(예: 화재)이 없으면 옮기지 않는다." },
+    ]
+  },
+  {
+    id: "skids", phase: 2, title: "Skids & Aquaplaning 미끄럼", icon: "🌊",
+    items: [
+      { en: "A front-wheel skid: the front tyres lose grip and the car goes straight instead of turning. Ease off the accelerator, do not brake hard.", kr: "전륜 미끄럼: 앞 타이어가 접지력을 잃어 회전 대신 직진. 가속기에서 발을 떼고 급브레이크 금지." },
+      { en: "A rear-wheel skid: the back of the car slides sideways. Steer in the direction the back is sliding, ease off the accelerator.", kr: "후륜 미끄럼: 차 뒷부분이 옆으로 미끄러짐. 뒷부분이 미끄러지는 방향으로 핸들을 돌리고, 가속기에서 발을 뗀다." },
+      { en: "Aquaplaning occurs when water builds up under the tyres faster than the tread can disperse it. The car floats on water.", kr: "수막현상은 타이어 트레드가 물을 배출하는 것보다 빨리 물이 타이어 아래 쌓일 때 발생. 차가 물 위에 뜬다." },
+      { en: "If aquaplaning: do NOT brake or accelerate. Ease off the accelerator, hold the wheel steady, and wait for tyres to regain contact.", kr: "수막현상 시: 브레이크나 가속 금지. 가속기에서 발을 떼고, 핸들을 안정적으로 유지, 타이어가 다시 접지할 때까지 대기." },
+      { en: "The main causes of skids: driving too fast for conditions, harsh braking, sudden steering, worn tyres, wet/icy roads.", kr: "미끄럼의 주요 원인: 조건에 비해 과속, 급브레이크, 급조향, 마모된 타이어, 젖거나 얼어붙은 도로." },
+    ],
+    quiz: [
+      { q: "In a rear-wheel skid, which direction should you steer?", qk: "후륜 미끄럼 시 핸들을 어느 방향으로 돌려야 하는가?", opts: ["Opposite to the skid 미끄럼 반대", "Same direction as the skid 미끄럼과 같은 방향", "Keep straight 직진 유지"], ans: 1, exp: "Steer in the direction the back is sliding.", expk: "뒷부분이 미끄러지는 방향으로 조향." },
+      { q: "What should you do if your car starts aquaplaning?", qk: "수막현상이 발생하면 어떻게 해야 하는가?", opts: ["Brake hard 급브레이크", "Accelerate 가속", "Ease off accelerator, hold steady 가속기에서 발 떼고 안정 유지"], ans: 2, exp: "Do NOT brake or accelerate. Ease off and hold steady.", expk: "브레이크/가속 금지. 발 떼고 안정 유지." },
+      { q: "What is the main cause of skids?", qk: "미끄럼의 주요 원인은?", opts: ["Low fuel 연료 부족", "Driving too fast for conditions 조건에 비해 과속", "Loud music 큰 음악"], ans: 1, exp: "Driving too fast, harsh braking, sudden steering, worn tyres.", expk: "과속, 급브레이크, 급조향, 마모된 타이어." },
+    ]
+  },
+  {
+    id: "goodbehaviour", phase: 2, title: "Good Behaviour 선행 기간", icon: "📋",
+    items: [
+      { en: "If you reach the demerit point limit (12 for full licence), you can choose: serve a 3-month suspension OR elect a 12-month Good Behaviour Period.", kr: "벌점 한도(정식 면허 12점) 도달 시 선택 가능: 3개월 면허 정지 또는 12개월 선행 기간(Good Behaviour Period)." },
+      { en: "During a Good Behaviour Period, you can keep driving but if you get 2 or more demerit points, your licence is suspended for double the original time (6 months).", kr: "선행 기간 중 계속 운전 가능하지만, 2점 이상 벌점을 받으면 원래 기간의 2배(6개월) 면허 정지." },
+      { en: "You can only elect a Good Behaviour Period once in a 5-year period.", kr: "5년 이내에 선행 기간은 1회만 선택 가능하다." },
+      { en: "Novice drivers (L, P1, P2) cannot elect a Good Behaviour Period — they serve the full suspension.", kr: "초보 운전자(L, P1, P2)는 선행 기간을 선택할 수 없으며, 정지 기간 전체를 이행해야 한다." },
+    ],
+    quiz: [
+      { q: "How long is the Good Behaviour Period?", qk: "선행 기간(Good Behaviour Period)은 얼마나 되는가?", opts: ["6 months", "12 months", "24 months"], ans: 1, exp: "12 months.", expk: "12개월." },
+      { q: "What happens if you get 2+ demerit points during a Good Behaviour Period?", qk: "선행 기간 중 2점 이상 벌점을 받으면?", opts: ["Warning only 경고만", "3-month suspension 3개월 정지", "6-month suspension (double) 6개월 정지(2배)"], ans: 2, exp: "Double the original suspension: 6 months.", expk: "원래의 2배인 6개월 면허 정지." },
+      { q: "Can a P1 driver elect a Good Behaviour Period?", qk: "P1 운전자가 선행 기간을 선택할 수 있는가?", opts: ["Yes 가능", "No 불가능"], ans: 1, exp: "Novice drivers cannot elect a Good Behaviour Period.", expk: "초보 운전자는 선행 기간 선택 불가." },
+      { q: "How often can you elect a Good Behaviour Period?", qk: "선행 기간은 얼마나 자주 선택 가능한가?", opts: ["Once every 2 years 2년에 1회", "Once every 5 years 5년에 1회", "Unlimited 무제한"], ans: 1, exp: "Once in a 5-year period.", expk: "5년 이내 1회만." },
+    ]
+  },
+  {
+    id: "vehicle", phase: 2, title: "Vehicle Rules 차량 규정", icon: "🔧",
+    items: [
+      { en: "Your vehicle must have at least one interior rear-view mirror and one exterior mirror on the right side.", kr: "차량에는 최소 1개의 실내 백미러와 1개의 오른쪽 외부 미러가 있어야 한다." },
+      { en: "It is illegal to hang anything from your rear-view mirror that could obstruct your view.", kr: "시야를 방해할 수 있는 물건을 백미러에 거는 것은 불법이다." },
+      { en: "You must only use your horn to warn other road users of danger. Using it for other purposes is an offence.", kr: "경적은 다른 도로 이용자에게 위험을 경고하는 용도로만 사용. 다른 목적 사용은 위반이다." },
+      { en: "All lights (headlights, brake lights, indicators, parking lights) must be working correctly.", kr: "모든 등화(전조등, 제동등, 방향지시등, 주차등)가 정상 작동해야 한다." },
+      { en: "It is illegal to have excessively tinted windows that prevent a clear view of the driver.", kr: "운전자가 잘 보이지 않을 정도로 과도하게 선팅된 창문은 불법이다." },
+      { en: "Motor Injury Insurance is compulsory and automatically included in your vehicle registration fee.", kr: "자동차 상해보험은 의무이며 차량 등록비에 자동 포함된다." },
+      { en: "Motor Injury Insurance covers personal injury to people involved in a crash, but NOT property damage.", kr: "자동차 상해보험은 사고 관련 인체 상해를 보상하지만, 재산 피해는 보상하지 않는다." },
+    ],
+    quiz: [
+      { q: "What does Motor Injury Insurance cover?", qk: "자동차 상해보험은 무엇을 보상하는가?", opts: ["Property damage only 재산 피해만", "Personal injury only 인체 상해만", "Both 둘 다"], ans: 1, exp: "Personal injury only, NOT property damage.", expk: "인체 상해만 보상, 재산 피해는 미보상." },
+      { q: "Can you use your horn to greet a friend?", qk: "친구에게 인사하기 위해 경적을 울릴 수 있는가?", opts: ["Yes 가능", "No 불가능"], ans: 1, exp: "Horn is only for warning of danger.", expk: "경적은 위험 경고 용도로만 사용." },
+      { q: "Is it illegal to hang items from the rear-view mirror?", qk: "백미러에 물건을 거는 것은 불법인가?", opts: ["Yes, if it obstructs view 시야 방해 시 불법", "No 아니다", "Only air fresheners 방향제만"], ans: 0, exp: "Illegal if it obstructs your view.", expk: "시야를 방해하면 불법이다." },
+      { q: "Is Motor Injury Insurance optional in WA?", qk: "WA에서 자동차 상해보험은 선택인가?", opts: ["Yes 선택", "No, it's compulsory 의무", "Only for new cars 신차만"], ans: 1, exp: "Compulsory — automatically included in registration.", expk: "의무 — 차량 등록비에 자동 포함." },
+      { q: "What is the minimum tyre tread depth?", qk: "최소 타이어 트레드 깊이는?", opts: ["1.0mm", "1.5mm", "2.0mm"], ans: 1, exp: "At least 1.5mm.", expk: "최소 1.5mm." },
+    ]
+  },
+  {
+    id: "towing", phase: 2, title: "Towing & Trailers 견인·트레일러", icon: "🚛",
+    items: [
+      { en: "When towing, the distance between the two vehicles must not exceed 4 metres (using a chain, rope, or tow bar).", kr: "견인 시 두 차량 간 거리는 4m를 초과하면 안 된다(체인, 로프, 견인 바 사용)." },
+      { en: "If the towing connection is longer than 2 metres, a white flag or cloth must be attached to it.", kr: "견인 연결부가 2m보다 길면 흰색 깃발이나 천을 부착해야 한다." },
+      { en: "Trailers must have working brake lights, indicators, and a registration plate light at night.", kr: "트레일러는 제동등, 방향지시등, 야간 번호판 조명이 작동해야 한다." },
+      { en: "Loads on trailers must be secured so they cannot fall or be blown off the vehicle.", kr: "트레일러 적재물은 떨어지거나 바람에 날리지 않도록 고정해야 한다." },
+      { en: "A caravan or trailer that is wider than the towing vehicle must have additional rear-view mirrors.", kr: "견인 차량보다 넓은 캐러밴이나 트레일러는 추가 백미러가 필요하다." },
+    ],
+    quiz: [
+      { q: "What is the maximum distance between two vehicles when towing?", qk: "견인 시 두 차량 간 최대 거리는?", opts: ["2 metres", "4 metres", "6 metres"], ans: 1, exp: "Must not exceed 4 metres.", expk: "4m를 초과하면 안 된다." },
+      { q: "When must you attach a white flag to a tow connection?", qk: "견인 연결부에 흰색 깃발을 부착해야 하는 경우는?", opts: ["Always 항상", "When longer than 2 metres 2m 초과 시", "When longer than 4 metres 4m 초과 시"], ans: 1, exp: "When the connection exceeds 2 metres.", expk: "연결부가 2m를 초과할 때." },
+    ]
+  },
+  {
+    id: "cyclists", phase: 2, title: "Cycle Safe 자전거 안전", icon: "🚲",
+    items: [
+      { en: "All cyclists must wear an approved bicycle helmet. Children under 17 must also wear one if on a bicycle or as a passenger.", kr: "모든 자전거 이용자는 승인된 헬멧을 착용해야 한다. 17세 미만 아동도 자전거 또는 동승 시 착용 필수." },
+      { en: "At night, a bicycle must have a steady or flashing white front light and a steady or flashing red rear light.", kr: "야간에 자전거는 흰색 전방등(점등 또는 점멸)과 빨간색 후방등(점등 또는 점멸)이 있어야 한다." },
+      { en: "A bicycle must have at least one working brake.", kr: "자전거는 최소 1개의 작동하는 브레이크가 있어야 한다." },
+      { en: "Cyclists must obey all road rules that apply to other vehicles, including traffic signals and stop signs.", kr: "자전거 이용자도 신호등, 정지 표지판 등 다른 차량에 적용되는 모든 도로 규칙을 준수해야 한다." },
+      { en: "Cyclists may ride on the footpath if they are under 12, or are accompanying a child under 12.", kr: "12세 미만이거나 12세 미만 아동을 동반하는 경우 인도에서 자전거를 탈 수 있다." },
+      { en: "Cyclists must give way to pedestrians on shared paths and footpaths.", kr: "공유 도로와 인도에서 자전거는 보행자에게 양보해야 한다." },
+    ],
+    quiz: [
+      { q: "Can an adult ride a bicycle on the footpath?", qk: "성인이 인도에서 자전거를 탈 수 있는가?", opts: ["Yes always 항상 가능", "Only when accompanying a child under 12 12세 미만 동반 시만", "Never 절대 불가"], ans: 1, exp: "Only if accompanying a child under 12.", expk: "12세 미만 아동을 동반할 때만 가능." },
+      { q: "What lights must a bicycle have at night?", qk: "야간에 자전거에 필요한 등화는?", opts: ["Front light only 전방등만", "White front + red rear 흰색 전방등 + 빨간색 후방등", "Any colour 아무 색"], ans: 1, exp: "White front light and red rear light.", expk: "흰색 전방등과 빨간색 후방등." },
+      { q: "Must cyclists obey traffic signals and stop signs?", qk: "자전거도 신호등과 정지 표지판을 준수해야 하는가?", opts: ["No 불필요", "Yes 준수해야 함", "Only on main roads 주요 도로만"], ans: 1, exp: "Cyclists must obey all road rules including signals and signs.", expk: "자전거도 신호등, 표지판 등 모든 도로 규칙을 준수해야 한다." },
+      { q: "Must cyclists give way to pedestrians on shared paths?", qk: "공유 도로에서 자전거는 보행자에게 양보해야 하는가?", opts: ["Yes 양보해야 함", "No 불필요", "Only if signed 표지판 있을 때만"], ans: 0, exp: "Cyclists must give way to pedestrians on shared paths.", expk: "공유 도로에서 자전거는 보행자에게 양보해야 한다." },
+    ]
+  },
+  {
+    id: "motorcycle2", phase: 2, title: "Motorcycles 오토바이", icon: "🏍️",
+    items: [
+      { en: "All motorcyclists and passengers must wear an approved safety helmet. Failure results in fines and demerit points.", kr: "모든 오토바이 운전자와 동승자는 승인된 안전 헬멧 착용 필수. 미착용 시 벌금 및 벌점." },
+      { en: "A motorcycle pillion passenger must be at least 8 years old (unless in a sidecar).", kr: "오토바이 뒤에 타는 동승자는 최소 8세 이상이어야 한다(사이드카 제외)." },
+      { en: "The passenger must sit behind the rider, face forward, and have both feet on the footrests at all times.", kr: "동승자는 운전자 뒤에 앉고, 전방을 향하며, 양 발을 항상 발받침에 올려야 한다." },
+      { en: "Motorcyclists should use both front and rear brakes for all stops to develop good habits for emergency braking.", kr: "오토바이 운전자는 모든 정차 시 앞뒤 브레이크를 함께 사용하여 비상 제동 습관을 들여야 한다." },
+      { en: "Always reduce speed before entering a bend. Braking in a bend can cause loss of control.", kr: "커브 진입 전 반드시 감속. 커브 안에서 브레이크를 밟으면 제어력을 잃을 수 있다." },
+    ],
+    quiz: [
+      { q: "What is the minimum age for a motorcycle pillion passenger?", qk: "오토바이 뒷좌석 동승 최소 연령은?", opts: ["6 years", "8 years", "10 years"], ans: 1, exp: "At least 8 years old (unless in a sidecar).", expk: "최소 8세(사이드카 제외)." },
+      { q: "Should you brake while in a bend on a motorcycle?", qk: "오토바이로 커브 안에서 브레이크를 밟아도 되는가?", opts: ["Yes 가능", "No, reduce speed before the bend 커브 전에 감속", "Only rear brake 뒤 브레이크만"], ans: 1, exp: "Reduce speed before the bend. Braking in a bend causes loss of control.", expk: "커브 전에 감속. 커브 내 브레이크는 제어력 상실 위험." },
+      { q: "Must a motorcycle pillion passenger wear a helmet?", qk: "오토바이 뒷좌석 동승자도 헬멧을 착용해야 하는가?", opts: ["Yes 착용 필수", "No 불필요", "Only on highways 고속도로만"], ans: 0, exp: "All riders AND passengers must wear an approved helmet.", expk: "모든 운전자와 동승자는 승인된 헬멧 착용 필수." },
+    ]
+  },
+  {
+    id: "overseas", phase: 2, title: "Overseas Licences 해외면허", icon: "🌏",
+    items: [
+      { en: "Temporary visitors may drive on a valid overseas licence for the duration of their visit.", kr: "임시 방문자는 유효한 해외 면허로 방문 기간 동안 운전할 수 있다." },
+      { en: "If your overseas licence is not in English, you must carry an International Driving Permit or an accredited English translation.", kr: "해외 면허가 영어가 아니면 국제운전면허증 또는 공인 영어 번역본을 휴대해야 한다." },
+      { en: "Permanent residents must convert to a WA licence within 3 months of becoming a permanent resident.", kr: "영주권자는 영주권 취득 후 3개월 이내에 WA 면허로 전환해야 한다." },
+      { en: "The EDR (Experienced Driver Recognised Country) category was removed on 1 November 2025. Drivers from previously-recognised countries now must pass both theory and practical tests.", kr: "EDR(경험 운전자 인정 국가) 카테고리는 2025년 11월 1일부로 폐지. 이전 인정 국가 운전자도 이제 이론·실기 시험 모두 통과해야 한다." },
+    ],
+    quiz: [
+      { q: "How long do permanent residents have to convert to a WA licence?", qk: "영주권자의 WA 면허 전환 기한은?", opts: ["1 month", "3 months", "6 months"], ans: 1, exp: "Within 3 months of becoming a permanent resident.", expk: "영주권 취득 후 3개월 이내." },
+      { q: "Was the EDR category still active after 1 November 2025?", qk: "EDR 카테고리는 2025년 11월 1일 이후에도 유효한가?", opts: ["Yes 유효", "No, it was removed 폐지됨"], ans: 1, exp: "The EDR category was removed on 1 November 2025.", expk: "2025년 11월 1일부로 폐지되었다." },
+      { q: "If your overseas licence is not in English, what must you carry?", qk: "해외 면허가 영어가 아닐 경우 무엇을 휴대해야 하는가?", opts: ["Nothing 아무것도", "International Driving Permit or accredited translation 국제면허증 또는 공인 번역본", "Your passport only 여권만"], ans: 1, exp: "An International Driving Permit or accredited English translation.", expk: "국제운전면허증 또는 공인 영어 번역본." },
+    ]
+  },
+];
+
+const PHASE3_DATA = [
+  {
+    id: "roadmarkings", phase: 3, title: "Road Markings 노면표시", icon: "🖊️",
+    items: [
+      { en: "A broken white centre line means you may cross it to overtake if it is safe to do so.", kr: "끊어진 흰색 중앙선은 안전하다면 추월을 위해 넘을 수 있다는 의미이다." },
+      { en: "An unbroken (solid) white centre line means you must NOT cross it to overtake.", kr: "끊어지지 않은(실선) 흰색 중앙선은 추월을 위해 넘어서는 안 된다는 의미이다." },
+      { en: "If the line nearest to you is broken and the line on the other side is solid, you may cross to overtake. But if the solid line is nearest to you, you must not.", kr: "자기 쪽 선이 점선이고 반대쪽이 실선이면 추월 가능. 자기 쪽이 실선이면 추월 불가." },
+      { en: "You may cross an unbroken centre line to enter or leave a driveway or side road.", kr: "진입로나 측면 도로에 들어가거나 나오기 위해서는 실선 중앙선을 넘을 수 있다." },
+      { en: "A painted island (diagonal lines surrounded by solid lines) must not be driven on. They separate traffic flows.", kr: "도색 안전지대(실선으로 둘러싸인 대각선 표시)는 주행하면 안 된다. 교통 흐름을 분리하는 용도이다." },
+      { en: "Edge lines (unbroken white lines at the road edge) mark the boundary of the carriageway. You should not drive over them except to stop or avoid a hazard.", kr: "가장자리선(도로 끝의 흰색 실선)은 차도의 경계를 표시한다. 정차하거나 위험을 피하는 경우 외에는 넘지 않아야 한다." },
+      { en: "A stop line is a thick white line across the road where you must stop at a STOP sign or red traffic light.", kr: "정지선은 STOP 표지판이나 빨간 신호등에서 반드시 멈춰야 하는 두꺼운 흰색 선이다." },
+      { en: "Yellow kerb markings: unbroken yellow line = no stopping at any time. Broken yellow line = clearway (no stopping during certain hours).", kr: "노란 연석 표시: 끊어지지 않은 노란선 = 항시 정차 금지. 끊어진 노란선 = 특정 시간대 정차 금지(클리어웨이)." },
+    ],
+    quiz: [
+      { q: "Can you cross an unbroken centre line to overtake?", qk: "실선 중앙선을 넘어 추월할 수 있는가?", opts: ["Yes 가능", "No 불가능", "Only if safe 안전하면 가능"], ans: 1, exp: "You must NOT cross an unbroken centre line to overtake.", expk: "실선 중앙선을 넘어 추월하면 안 된다." },
+      { q: "If the broken line is on your side and the solid line on the other side, can you overtake?", qk: "자기 쪽이 점선이고 반대쪽이 실선이면 추월 가능한가?", opts: ["Yes 가능", "No 불가능"], ans: 0, exp: "Yes — if the broken line is nearest to you, you may cross to overtake.", expk: "자기 쪽 점선이면 추월 가능." },
+      { q: "Can you cross an unbroken centre line to enter a driveway?", qk: "진입로에 들어가기 위해 실선 중앙선을 넘을 수 있는가?", opts: ["Yes 가능", "No 불가능"], ans: 0, exp: "Yes — you may cross to enter or leave a driveway.", expk: "진입로 출입을 위해서는 넘을 수 있다." },
+      { q: "What does an unbroken yellow kerb line mean?", qk: "끊어지지 않은 노란 연석선의 의미는?", opts: ["No parking 주차 금지", "No stopping at any time 항시 정차 금지", "Clearway 클리어웨이"], ans: 1, exp: "Unbroken yellow = no stopping at any time.", expk: "노란 실선 = 항시 정차 금지." },
+      { q: "Can you drive on a painted island?", qk: "도색 안전지대 위를 주행할 수 있는가?", opts: ["Yes 가능", "No 불가능", "Only to turn 회전 시만"], ans: 1, exp: "Painted islands must not be driven on.", expk: "도색 안전지대 위를 주행하면 안 된다." },
+    ]
+  },
+  {
+    id: "roadsigns", phase: 3, title: "Road Signs 도로표지판", icon: "🔺",
+    items: [
+      { en: "Red circle signs are PROHIBITORY — they tell you what you must NOT do (e.g. no entry, no U-turn, speed limit).", kr: "빨간 원형 표지판은 금지 표지 — 해서는 안 되는 것을 알려준다 (예: 진입 금지, 유턴 금지, 제한속도)." },
+      { en: "Red triangle (point up) signs are WARNING signs — they warn of hazards ahead (e.g. curves, crossroads, animals).", kr: "빨간 삼각형(꼭짓점 위) 표지판은 경고 표지 — 전방 위험을 알려준다 (예: 커브, 교차로, 동물)." },
+      { en: "A red octagon (8-sided) is always a STOP sign. You must come to a complete stop.", kr: "빨간 팔각형은 항상 STOP(정지) 표지판이다. 반드시 완전히 정차해야 한다." },
+      { en: "A white inverted triangle with red border is a GIVE WAY sign. Slow down and be ready to stop.", kr: "빨간 테두리의 흰색 역삼각형은 GIVE WAY(양보) 표지판이다. 감속하고 정지 준비를 해야 한다." },
+      { en: "Blue rectangle signs are INFORMATION signs — they provide directions, distance, or facility information.", kr: "파란 직사각형 표지판은 안내 표지 — 방향, 거리, 시설 정보를 제공한다." },
+      { en: "Green rectangle signs indicate DIRECTIONS on freeways and major roads (e.g. exit numbers, city names).", kr: "녹색 직사각형 표지판은 고속도로와 주요 도로의 방향을 안내한다 (예: 출구 번호, 도시명)." },
+      { en: "A round sign with a red circle and a number inside shows the SPEED LIMIT for that road.", kr: "빨간 원 안에 숫자가 있는 원형 표지판은 해당 도로의 제한속도를 나타낸다." },
+      { en: "A diamond-shaped yellow sign warns of road conditions or temporary hazards.", kr: "다이아몬드 형태의 노란 표지판은 도로 상태나 임시 위험을 경고한다." },
+    ],
+    quiz: [
+      { q: "What shape is a STOP sign?", qk: "STOP 표지판의 모양은?", opts: ["Circle 원형", "Triangle 삼각형", "Octagon 팔각형"], ans: 2, exp: "A red octagon (8 sides).", expk: "빨간 팔각형(8면)." },
+      { q: "What does a red triangle warning sign indicate?", qk: "빨간 삼각형 경고 표지판은 무엇을 나타내는가?", opts: ["Prohibition 금지", "Hazard ahead 전방 위험", "Information 안내"], ans: 1, exp: "Warning of hazards ahead.", expk: "전방 위험 경고." },
+      { q: "What colour are freeway direction signs?", qk: "고속도로 방향 표지판의 색상은?", opts: ["Blue 파란색", "Green 녹색", "Yellow 노란색"], ans: 1, exp: "Green rectangle signs on freeways.", expk: "고속도로에서는 녹색 직사각형." },
+      { q: "What shape is a GIVE WAY sign?", qk: "GIVE WAY(양보) 표지판의 모양은?", opts: ["Circle 원형", "Inverted triangle 역삼각형", "Octagon 팔각형"], ans: 1, exp: "White inverted triangle with red border.", expk: "빨간 테두리의 흰색 역삼각형." },
+      { q: "What does a diamond-shaped yellow sign indicate?", qk: "다이아몬드 형태 노란 표지판은 무엇을 나타내는가?", opts: ["Speed limit 제한속도", "Road conditions or temporary hazard 도로 상태/임시 위험", "Direction 방향"], ans: 1, exp: "Warns of road conditions or temporary hazards.", expk: "도로 상태나 임시 위험을 경고." },
+    ]
+  },
+  {
+    id: "buses", phase: 3, title: "Buses & Taxis 버스·택시", icon: "🚌",
+    items: [
+      { en: "When a bus in a built-up area (speed limit 70 km/h or less) is signalling to pull out from a bus stop, you must give way to it.", kr: "시가지(제한속도 70km/h 이하)에서 버스가 정류장에서 출발 신호를 보내면 양보해야 한다." },
+      { en: "This give-way rule applies only if the bus is indicating and is within the bus zone or stop.", kr: "이 양보 규칙은 버스가 방향지시등을 켜고 버스 구역 또는 정류장 안에 있을 때만 적용된다." },
+      { en: "You must not overtake or pass a bus that is stopped at a bus zone to pick up or set down passengers if doing so would be dangerous.", kr: "승객을 태우거나 내리기 위해 버스 구역에 정차한 버스를 위험하게 추월하거나 지나가면 안 된다." },
+      { en: "Taxis may stop in taxi zones. You must not stop in a taxi zone unless driving a taxi.", kr: "택시는 택시 구역에 정차할 수 있다. 택시가 아닌 차량은 택시 구역에 정차하면 안 된다." },
+    ],
+    quiz: [
+      { q: "When must you give way to a bus pulling out from a stop?", qk: "정류장에서 출발하는 버스에 양보해야 하는 경우는?", opts: ["Always 항상", "In built-up areas (≤70 km/h) 시가지(70km/h 이하)", "Only on freeways 고속도로만"], ans: 1, exp: "In built-up areas with speed limit 70 km/h or less.", expk: "제한속도 70km/h 이하 시가지에서." },
+      { q: "Can you stop in a taxi zone if you're not a taxi?", qk: "택시가 아닌 차가 택시 구역에 정차할 수 있는가?", opts: ["Yes 가능", "No 불가능", "Briefly 잠깐만 가능"], ans: 1, exp: "Only taxis may stop in taxi zones.", expk: "택시만 택시 구역에 정차 가능." },
+      { q: "At what speed limit or below must you give way to a bus leaving a stop?", qk: "버스가 정류장에서 출발할 때 양보 의무가 있는 제한속도는?", opts: ["50 km/h or less", "70 km/h or less", "All speed limits 모든 제한속도"], ans: 1, exp: "In built-up areas with 70 km/h or less.", expk: "70km/h 이하 시가지에서." },
+    ]
+  },
+  {
+    id: "predrive", phase: 3, title: "Pre-Driving Checks 출발전점검", icon: "🔍",
+    items: [
+      { en: "Before driving, check: tyres (at least 1.5mm tread), brakes, steering, all lights, horn, windscreen/wipers, and mirrors.", kr: "운전 전 점검: 타이어(트레드 최소 1.5mm), 브레이크, 조향장치, 모든 등화, 경적, 윈드스크린/와이퍼, 미러." },
+      { en: "Tyres should be inflated to the vehicle manufacturer's specifications. Check tyre pressure when tyres are cold.", kr: "타이어는 제조사 사양에 맞게 공기압을 유지. 타이어가 차가울 때 공기압을 확인해야 한다." },
+      { en: "Adjust your interior mirror for a clear view behind. Adjust exterior mirrors so you can just see the tip of your door handle.", kr: "실내 미러는 뒤가 잘 보이도록 조정. 외부 미러는 도어 핸들 끝이 살짝 보이도록 조정." },
+      { en: "It is illegal to have anything hanging from your mirror. Blind spots exist even with mirrors — check over your shoulder.", kr: "미러에 물건을 거는 것은 불법. 미러가 있어도 사각지대가 존재 — 어깨 너머로 확인해야 한다." },
+      { en: "A dirty windscreen is dangerous, especially when driving into the sun, at night, or in rain.", kr: "더러운 윈드스크린은 위험하다. 특히 역광, 야간, 비올 때 더 위험하다." },
+    ],
+    quiz: [
+      { q: "When should you check tyre pressure?", qk: "타이어 공기압은 언제 확인해야 하는가?", opts: ["After a long drive 장거리 후", "When tyres are cold 타이어가 차가울 때", "At the petrol station 주유소에서"], ans: 1, exp: "Check when tyres are cold.", expk: "타이어가 차가울 때 확인." },
+      { q: "How should you adjust exterior mirrors?", qk: "외부 미러를 어떻게 조정해야 하는가?", opts: ["See the whole car side 차 옆면 전체", "Just see the door handle tip 도어 핸들 끝만 살짝", "See only the road 도로만"], ans: 1, exp: "So you can just see the tip of your door handle.", expk: "도어 핸들 끝이 살짝 보이도록." },
+      { q: "Is a dirty windscreen dangerous?", qk: "더러운 윈드스크린은 위험한가?", opts: ["No 아니다", "Yes, especially in sun, at night, and in rain 역광·야간·비올 때 특히 위험", "Only at night 야간에만"], ans: 1, exp: "Dangerous especially driving into sun, at night, or in rain.", expk: "역광, 야간, 비올 때 특히 위험." },
+    ]
+  },
+  {
+    id: "pplate", phase: 3, title: "P-Plate Rules P플레이트 규정", icon: "🔰",
+    items: [
+      { en: "P1 (red P plates): must be displayed for at least 6 months. Zero BAC. Max 4 demerit points. Speed limit 100 km/h.", kr: "P1(빨간 P 플레이트): 최소 6개월 표시. BAC 0.00. 벌점 한도 4점. 최대 속도 100km/h." },
+      { en: "P2 (green P plates): must be displayed for at least 18 months. Zero BAC (still novice). Max 8 demerit points.", kr: "P2(녹색 P 플레이트): 최소 18개월 표시. BAC 0.00(여전히 초보). 벌점 한도 8점." },
+      { en: "After completing P1 (6 months), you must pass the Hazard Perception Test (HPT) to progress to P2.", kr: "P1(6개월) 완료 후, P2로 진급하려면 위험인식시험(HPT)을 통과해야 한다." },
+      { en: "After completing P2 (18 months), you can apply for a full licence. Total novice period is at least 2 years.", kr: "P2(18개월) 완료 후 정식 면허 신청 가능. 전체 초보 기간은 최소 2년이다." },
+      { en: "P1 drivers must not drive with more than one peer passenger (aged 16–21) between 12am and 5am, unless supervised.", kr: "P1 운전자는 자정~오전 5시 사이에 16~21세 동승자를 1명 초과하여 태울 수 없다(지도 운전자 동반 시 제외)." },
+      { en: "Both P1 and P2 drivers must carry their licence at all times while driving.", kr: "P1, P2 운전자 모두 운전 중 항상 면허증을 휴대해야 한다." },
+    ],
+    quiz: [
+      { q: "How long must you display P1 (red) plates?", qk: "P1(빨간) 플레이트를 얼마나 표시해야 하는가?", opts: ["3 months", "6 months", "12 months"], ans: 1, exp: "At least 6 months.", expk: "최소 6개월." },
+      { q: "What test must you pass to move from P1 to P2?", qk: "P1에서 P2로 진급하려면 어떤 시험을 통과해야 하는가?", opts: ["Theory test 이론시험", "Practical test 실기시험", "Hazard Perception Test 위험인식시험"], ans: 2, exp: "The Hazard Perception Test (HPT).", expk: "위험인식시험(HPT)." },
+      { q: "What is the total minimum novice period (L + P1 + P2)?", qk: "전체 최소 초보 기간(L + P1 + P2)은?", opts: ["1 year", "2 years", "3 years"], ans: 1, exp: "At least 2 years total.", expk: "총 최소 2년." },
+      { q: "Can a P1 driver carry 3 friends aged 18 at 2am?", qk: "P1 운전자가 새벽 2시에 18세 친구 3명을 태울 수 있는가?", opts: ["Yes 가능", "No 불가능", "With parent's permission 부모 허락 시"], ans: 1, exp: "P1 drivers can only have 1 peer passenger (16-21) between midnight and 5am.", expk: "P1은 자정~5시 사이 16~21세 동승자 1명만 허용." },
+      { q: "What BAC limit applies to P2 drivers?", qk: "P2 운전자에게 적용되는 BAC 한도는?", opts: ["0.00%", "0.02%", "0.05%"], ans: 0, exp: "Zero BAC — P2 drivers are still novice drivers.", expk: "BAC 0.00 — P2도 여전히 초보 운전자." },
+      { q: "How long is the P2 (green) plate period?", qk: "P2(녹색) 플레이트 기간은?", opts: ["6 months", "12 months", "18 months"], ans: 2, exp: "At least 18 months.", expk: "최소 18개월." },
+    ]
+  },
+  {
+    id: "clearways", phase: 3, title: "Clearways 클리어웨이", icon: "🚧",
+    items: [
+      { en: "A clearway is a road where you must not stop during the times shown on the clearway sign.", kr: "클리어웨이는 표지판에 표시된 시간 동안 정차해서는 안 되는 도로이다." },
+      { en: "Clearway signs show the times when stopping is prohibited (e.g. 7am–9am, 4pm–6pm on weekdays).", kr: "클리어웨이 표지판은 정차 금지 시간을 표시한다 (예: 평일 오전 7~9시, 오후 4~6시)." },
+      { en: "If your car breaks down in a clearway, you must move it off the road as soon as possible.", kr: "클리어웨이에서 차가 고장나면 가능한 한 빨리 도로 밖으로 이동해야 한다." },
+      { en: "Vehicles left in a clearway during restricted hours may be towed at the owner's expense.", kr: "제한 시간 중 클리어웨이에 방치된 차량은 소유자 비용으로 견인될 수 있다." },
+    ],
+    quiz: [
+      { q: "What does a clearway sign indicate?", qk: "클리어웨이 표지판은 무엇을 나타내는가?", opts: ["No parking 주차 금지", "No stopping during certain hours 특정 시간 정차 금지", "Road closed 도로 폐쇄"], ans: 1, exp: "No stopping during the times shown.", expk: "표시된 시간 동안 정차 금지." },
+      { q: "What can happen if you leave your car in a clearway during restricted hours?", qk: "제한 시간 중 클리어웨이에 차를 방치하면 어떻게 되는가?", opts: ["Nothing 아무 일 없음", "Fine only 벌금만", "Towed at owner's expense 소유자 비용으로 견인"], ans: 2, exp: "May be towed at the owner's expense.", expk: "소유자 비용으로 견인될 수 있다." },
+    ]
+  },
+  {
+    id: "stopping", phase: 3, title: "Stopping Rules 정차 규칙", icon: "✋",
+    items: [
+      { en: "You must not stop within 20 metres of an intersection with traffic lights (unless in marked parking).", kr: "신호등이 있는 교차로로부터 20m 이내에서 정차하면 안 된다(표시된 주차 구역 제외)." },
+      { en: "You must not stop on or within 20 metres before a children's crossing, or 10 metres after.", kr: "어린이 횡단보도 위 또는 전 20m, 후 10m 이내에서 정차하면 안 된다." },
+      { en: "You must not stop within 10 metres before a pedestrian crossing, or 10 metres after (unless in marked parking).", kr: "횡단보도 전 10m, 후 10m 이내에서 정차하면 안 된다(표시된 주차 구역 제외)." },
+      { en: "You must not stop on a bridge, overpass, or in a tunnel unless traffic requires it.", kr: "교량, 고가도로, 터널에서 교통 상황이 요구하지 않는 한 정차하면 안 된다." },
+      { en: "You must not stop within 1 metre of a fire hydrant.", kr: "소화전으로부터 1m 이내에서 정차하면 안 된다." },
+      { en: "'No Stopping' means you cannot stop at all. 'No Parking' means you can stop briefly to pick up/drop off passengers.", kr: "'정차 금지(No Stopping)'는 정차 자체가 불가. '주차 금지(No Parking)'는 승객 승하차를 위한 짧은 정차는 가능." },
+    ],
+    quiz: [
+      { q: "What is the difference between 'No Stopping' and 'No Parking'?", qk: "'정차 금지'와 '주차 금지'의 차이는?", opts: ["No difference 차이 없음", "No Stopping = can't stop at all; No Parking = brief stop OK 정차금지=정차불가; 주차금지=짧은정차가능", "Opposite 반대"], ans: 1, exp: "No Stopping = cannot stop at all. No Parking = brief stop to pick up/drop off.", expk: "정차금지=정차 자체 불가. 주차금지=승하차 위한 짧은 정차 가능." },
+      { q: "How far from a fire hydrant must you not stop?", qk: "소화전으로부터 정차 금지 거리는?", opts: ["1 metre", "3 metres", "5 metres"], ans: 0, exp: "Within 1 metre.", expk: "1m 이내 정차 금지." },
+      { q: "Can you stop briefly in a 'No Parking' zone to drop off a passenger?", qk: "'주차 금지' 구역에서 승객 하차를 위해 잠깐 정차할 수 있는가?", opts: ["Yes 가능", "No 불가능"], ans: 0, exp: "No Parking allows brief stops for pick-up/drop-off.", expk: "주차 금지 구역에서는 짧은 승하차 정차가 가능하다." },
+      { q: "Can you stop on a bridge or in a tunnel?", qk: "교량이나 터널에서 정차할 수 있는가?", opts: ["Yes 가능", "No, unless traffic requires it 교통 상황 요구 시만", "Only at night 야간만"], ans: 1, exp: "Must not stop unless traffic requires it.", expk: "교통 상황이 요구하지 않는 한 정차 금지." },
+    ]
+  },
+  {
+    id: "animals", phase: 3, title: "Animals & Horses 동물·말", icon: "🐴",
+    items: [
+      { en: "If you see an animal warning sign, slow down and be ready to stop. Animals such as kangaroos are most active at dawn and dusk.", kr: "동물 경고 표지판을 보면 감속하고 정차 준비. 캥거루 등 동물은 새벽과 해질녘에 가장 활발하다." },
+      { en: "If you see a horse and rider on the road, slow down, give them plenty of room, and do not sound your horn (it may frighten the horse).", kr: "도로에서 말과 기수를 보면 감속하고 충분한 간격을 두고, 경적을 울리지 마라(말이 놀랄 수 있다)." },
+      { en: "A person leading or riding an animal on the road has the same rights as other road users.", kr: "도로에서 동물을 이끌거나 타고 있는 사람은 다른 도로 이용자와 같은 권리를 가진다." },
+      { en: "In country areas, animals on the road are a major hazard. Use high beam at night (when not near other vehicles) to spot them earlier.", kr: "시골 지역에서 도로 위 동물은 큰 위험 요소다. 야간에 다른 차량이 가까이 없을 때 상향등을 사용해 더 일찍 발견하라." },
+    ],
+    quiz: [
+      { q: "Should you sound your horn when passing a horse and rider?", qk: "말과 기수를 지나갈 때 경적을 울려야 하는가?", opts: ["Yes, to warn them 경고를 위해", "No, it may frighten the horse 말이 놀랄 수 있으니 안 됨", "Only at night 야간에만"], ans: 1, exp: "Do not sound your horn — it may frighten the horse.", expk: "경적 금지 — 말이 놀랄 수 있다." },
+      { q: "When are kangaroos most active?", qk: "캥거루가 가장 활발한 시간은?", opts: ["Midday 한낮", "Dawn and dusk 새벽과 해질녘", "Midnight 자정"], ans: 1, exp: "Dawn and dusk.", expk: "새벽과 해질녘." },
+      { q: "Do people riding animals on the road have the same rights as other road users?", qk: "도로에서 동물을 타는 사람도 다른 도로 이용자와 같은 권리를 갖는가?", opts: ["Yes 동일한 권리", "No 권리 없음", "Only on rural roads 시골 도로만"], ans: 0, exp: "A person riding an animal has the same rights as other road users.", expk: "동물을 타는 사람도 동일한 권리를 가진다." },
+    ]
+  },
+];
+
+const PHASE4_DATA = [
+  {
+    id: "schoolzone", phase: 4, title: "School Zones 스쿨존", icon: "🏫",
+    items: [
+      { en: "The speed limit in a school zone in WA is 40 km/h. It applies during school days, typically 7:30–9:00am and 2:30–4:00pm.", kr: "WA 스쿨존 제한속도는 40km/h. 수업일에 적용, 보통 오전 7:30~9:00, 오후 2:30~4:00." },
+      { en: "School zone times may vary in regional areas — always check the signs.", kr: "시골 지역에서는 스쿨존 시간이 다를 수 있다 — 항상 표지판을 확인해야 한다." },
+      { en: "School zone signs are fluorescent yellow-green to increase visibility.", kr: "스쿨존 표지판은 형광 황녹색으로 가시성을 높인다." },
+      { en: "Children's crossings may have flags controlled by a crossing attendant. You must stop when flags are extended.", kr: "어린이 횡단보도에는 교통 안내원이 제어하는 깃발이 있을 수 있다. 깃발이 펼쳐지면 반드시 정차." },
+    ],
+    quiz: [
+      { q: "What is the speed limit in a WA school zone?", qk: "WA 스쿨존의 제한속도는?", opts: ["30 km/h", "40 km/h", "50 km/h"], ans: 1, exp: "40 km/h during school zone hours.", expk: "스쿨존 시간에 40km/h." },
+      { q: "When do school zone times typically apply?", qk: "스쿨존 시간은 보통 언제 적용되는가?", opts: ["All day 종일", "7:30-9am & 2:30-4pm", "Only at 3pm 3시만"], ans: 1, exp: "Typically 7:30–9:00am and 2:30–4:00pm on school days.", expk: "수업일 오전 7:30~9:00, 오후 2:30~4:00." },
+    ]
+  },
+  {
+    id: "sharedzone", phase: 4, title: "Shared Zones 공유도로", icon: "🤝",
+    items: [
+      { en: "A shared zone is an area where pedestrians and vehicles share the same road space. The speed limit is 10 km/h.", kr: "공유도로(Shared Zone)는 보행자와 차량이 같은 도로 공간을 공유하는 구역이다. 제한속도는 10km/h." },
+      { en: "In a shared zone, drivers must give way to pedestrians at all times.", kr: "공유도로에서 운전자는 항상 보행자에게 양보해야 한다." },
+      { en: "Shared zones are marked with a 'Shared Zone' sign at the start and an 'End Shared Zone' sign at the end.", kr: "공유도로는 시작 지점에 'Shared Zone' 표지판, 끝 지점에 'End Shared Zone' 표지판이 있다." },
+    ],
+    quiz: [
+      { q: "What is the speed limit in a shared zone?", qk: "공유도로의 제한속도는?", opts: ["5 km/h", "10 km/h", "20 km/h"], ans: 1, exp: "10 km/h in a shared zone.", expk: "공유도로에서 10km/h." },
+      { q: "Who has priority in a shared zone?", qk: "공유도로에서 우선권은 누구에게 있는가?", opts: ["Vehicles 차량", "Pedestrians 보행자", "Cyclists 자전거"], ans: 1, exp: "Drivers must give way to pedestrians at all times.", expk: "운전자는 항상 보행자에게 양보해야 한다." },
+    ]
+  },
+  {
+    id: "handsignals", phase: 4, title: "Signals & Lane Change 신호·차선변경", icon: "🤚",
+    items: [
+      { en: "You must signal left or right before turning, changing lanes, diverging, or moving from the kerb.", kr: "회전, 차선 변경, 분기, 연석에서 출발 전에 좌우 방향지시등을 켜야 한다." },
+      { en: "On roads with a speed limit over 80 km/h, you must signal for at least 5 seconds before changing lanes.", kr: "제한속도 80km/h 초과 도로에서 차선 변경 시 최소 5초 전에 신호를 켜야 한다." },
+      { en: "Before changing lanes: check mirrors, signal, check blind spot (head check over shoulder), then move.", kr: "차선 변경 전: 미러 확인, 신호, 사각지대 확인(어깨 너머 고개 돌려 확인), 그 후 이동." },
+      { en: "Hand signals: right arm straight out = turning right. Right arm bent upward = slowing/stopping. These are used if indicators fail.", kr: "수신호: 오른팔 직선 = 우회전. 오른팔 위로 꺾음 = 감속/정지. 방향지시등 고장 시 사용." },
+      { en: "You must signal long enough to give sufficient warning to other road users.", kr: "다른 도로 이용자에게 충분한 경고를 줄 수 있을 만큼 오래 신호를 켜야 한다." },
+    ],
+    quiz: [
+      { q: "How long must you signal before changing lanes on a road over 80 km/h?", qk: "80km/h 초과 도로에서 차선 변경 전 신호 시간은?", opts: ["2 seconds", "5 seconds", "10 seconds"], ans: 1, exp: "At least 5 seconds.", expk: "최소 5초." },
+      { q: "What must you check before changing lanes (after mirror and signal)?", qk: "미러와 신호 후 차선 변경 전 무엇을 확인해야 하는가?", opts: ["GPS", "Blind spot (head check) 사각지대(고개 돌려 확인)", "Speedometer 속도계"], ans: 1, exp: "Head check over your shoulder to check blind spot.", expk: "어깨 너머로 고개를 돌려 사각지대 확인." },
+    ]
+  },
+  {
+    id: "stoppingdist", phase: 4, title: "Stopping Distances 정지 거리", icon: "📐",
+    items: [
+      { en: "Total stopping distance = reaction distance + braking distance.", kr: "총 정지 거리 = 반응 거리 + 제동 거리." },
+      { en: "Average reaction time is about 1.5 seconds. At 60 km/h that means ~25 metres before you even start braking.", kr: "평균 반응 시간은 약 1.5초. 60km/h에서 브레이크를 밟기도 전에 약 25m를 이동한다." },
+      { en: "At 60 km/h on dry road: total stopping distance ≈ 45 metres.", kr: "건조한 도로 60km/h: 총 정지 거리 ≈ 45m." },
+      { en: "At 100 km/h on dry road: total stopping distance ≈ 100 metres.", kr: "건조한 도로 100km/h: 총 정지 거리 ≈ 100m." },
+      { en: "Wet roads can double your stopping distance. At 100 km/h on wet road: ≈ 200 metres.", kr: "젖은 도로에서는 정지 거리가 2배. 100km/h 젖은 도로: ≈ 200m." },
+      { en: "Worn tyres, faulty brakes, heavy loads, and downhill slopes all increase stopping distance.", kr: "마모된 타이어, 고장 난 브레이크, 과적, 내리막길 모두 정지 거리를 증가시킨다." },
+      { en: "Heavy vehicles take much longer to stop than cars. Keep well back from trucks and buses.", kr: "대형 차량은 승용차보다 정지하는 데 훨씬 오래 걸린다. 트럭과 버스에서 충분한 거리를 유지해라." },
+    ],
+    quiz: [
+      { q: "What is the approximate stopping distance at 60 km/h on a dry road?", qk: "건조한 도로 60km/h에서 대략적인 정지 거리는?", opts: ["25 metres", "45 metres", "70 metres"], ans: 1, exp: "Approximately 45 metres.", expk: "약 45m." },
+      { q: "How does wet road affect stopping distance?", qk: "젖은 도로가 정지 거리에 미치는 영향은?", opts: ["No effect 영향 없음", "Doubles it 2배", "Triples it 3배"], ans: 1, exp: "Wet roads can double your stopping distance.", expk: "젖은 도로에서 정지 거리가 2배." },
+      { q: "What is total stopping distance made up of?", qk: "총 정지 거리의 구성 요소는?", opts: ["Braking only 제동만", "Reaction + braking 반응 + 제동", "Speed + braking 속도 + 제동"], ans: 1, exp: "Reaction distance + braking distance.", expk: "반응 거리 + 제동 거리." },
+    ]
+  },
+  {
+    id: "emergency2", phase: 4, title: "Emergency Contacts 비상 연락", icon: "📞",
+    items: [
+      { en: "In an emergency, call 000 (triple zero) for police, fire, or ambulance.", kr: "응급 상황에서는 000(트리플 제로)으로 경찰, 소방, 구급차를 호출한다." },
+      { en: "From a mobile phone, you can also call 112 which connects to 000. This works even without a SIM card or credit.", kr: "휴대전화에서는 112로도 000에 연결된다. SIM 카드나 잔액이 없어도 작동한다." },
+      { en: "For power line emergencies (fallen lines, contact with lines), call Western Power on 13 13 51.", kr: "전선 관련 비상(전선 추락, 접촉)은 Western Power 13 13 51로 전화한다." },
+      { en: "Aggressive driving or road rage: do not engage. Lock your doors, drive to a police station or busy area, call police.", kr: "공격적 운전이나 분노 운전 시: 대응하지 말 것. 문을 잠그고, 경찰서나 번화한 곳으로 이동, 경찰에 전화." },
+      { en: "If you break down, move your vehicle off the road if possible. Turn on hazard lights. Stay with your vehicle in a safe location.", kr: "고장 시 가능하면 차를 도로 밖으로 이동. 비상등 켜기. 안전한 곳에서 차와 함께 대기." },
+    ],
+    quiz: [
+      { q: "What number do you call for emergency services in Australia?", qk: "호주에서 응급 서비스 전화번호는?", opts: ["911", "000", "999"], ans: 1, exp: "000 (triple zero).", expk: "000(트리플 제로)." },
+      { q: "Can you call 112 from a mobile phone without a SIM card?", qk: "SIM 카드 없이 휴대전화에서 112로 전화할 수 있는가?", opts: ["Yes 가능", "No 불가능"], ans: 0, exp: "Yes — 112 works even without a SIM card.", expk: "SIM 카드 없이도 112 가능." },
+      { q: "What should you do if confronted by an aggressive driver?", qk: "공격적 운전자를 만나면 어떻게 해야 하는가?", opts: ["Confront them 대응", "Lock doors, drive to safe area, call police 문 잠그고 안전한 곳으로 이동, 경찰 전화", "Speed up 가속"], ans: 1, exp: "Do not engage. Lock doors, drive to a police station or busy area.", expk: "대응하지 말고 문 잠그고 경찰서/번화한 곳으로 이동." },
+    ]
+  },
+  {
+    id: "roadworks", phase: 4, title: "Roadworks 도로공사", icon: "🚜",
+    items: [
+      { en: "Always obey temporary speed limits at roadwork sites. Fines are often doubled in roadwork zones.", kr: "도로공사 현장의 임시 제한속도를 항상 준수해야 한다. 공사 구역에서 벌금이 2배로 부과되는 경우가 많다." },
+      { en: "Temporary traffic controllers (flaggers) have the same authority as traffic signals. You must obey their directions.", kr: "임시 교통 통제원(깃발 통제원)은 신호등과 같은 권한을 가진다. 그들의 지시에 따라야 한다." },
+      { en: "Slow down and be prepared to stop near roadworks. Workers and machinery may be close to the road.", kr: "도로공사 근처에서는 감속하고 정차 준비를 해야 한다. 작업자와 기계가 도로 가까이 있을 수 있다." },
+      { en: "Reduced speed limits at roadworks apply even if workers are not visibly present.", kr: "도로공사 구간의 감속 제한은 작업자가 보이지 않아도 적용된다." },
+    ],
+    quiz: [
+      { q: "Do roadwork speed limits apply when no workers are visible?", qk: "작업자가 보이지 않아도 도로공사 속도 제한이 적용되는가?", opts: ["Yes 적용", "No 미적용", "Only at night 야간만"], ans: 0, exp: "Yes — reduced limits apply regardless of whether workers are visible.", expk: "작업자 유무와 관계없이 적용." },
+      { q: "Must you obey a temporary traffic controller's directions?", qk: "임시 교통 통제원의 지시를 따라야 하는가?", opts: ["Yes, same authority as traffic signals 신호등과 같은 권한", "Only if police 경찰만", "Optional 선택사항"], ans: 0, exp: "They have the same authority as traffic signals.", expk: "신호등과 같은 권한을 가진다." },
+    ]
+  },
+  {
+    id: "speedsummary", phase: 4, title: "Speed Limits Summary 속도 총정리", icon: "🏁",
+    items: [
+      { en: "Built-up area (default, with street lights): 50 km/h", kr: "시가지(기본, 가로등 있음): 50km/h" },
+      { en: "School zones: 40 km/h (during posted hours)", kr: "스쿨존: 40km/h(표시 시간 중)" },
+      { en: "Shared zones: 10 km/h", kr: "공유도로: 10km/h" },
+      { en: "Passing emergency/incident response vehicles with flashing lights: 40 km/h", kr: "비상등 켠 긴급/사고대응 차량 통과 시: 40km/h" },
+      { en: "Outside built-up areas (default, no signs): 110 km/h", kr: "시가지 외(기본, 표지판 없음): 110km/h" },
+      { en: "Maximum for Learner drivers: 100 km/h", kr: "초보운전 최대: 100km/h" },
+      { en: "Always obey posted speed signs — they override default limits.", kr: "항상 게시된 속도 표지판을 따라야 한다 — 기본 제한속도보다 우선한다." },
+    ],
+    quiz: [
+      { q: "What is the speed limit in a shared zone?", qk: "공유도로의 속도 제한은?", opts: ["10 km/h", "20 km/h", "40 km/h"], ans: 0, exp: "10 km/h.", expk: "10km/h." },
+      { q: "What is the default speed limit outside built-up areas in WA?", qk: "WA 시가지 외 지역의 기본 제한속도는?", opts: ["80 km/h", "100 km/h", "110 km/h"], ans: 2, exp: "110 km/h.", expk: "110km/h." },
+      { q: "Which has the lowest speed limit: shared zone, school zone, or built-up area?", qk: "공유도로, 스쿨존, 시가지 중 가장 낮은 제한속도는?", opts: ["School zone 스쿨존", "Shared zone 공유도로", "Built-up area 시가지"], ans: 1, exp: "Shared zone at 10 km/h.", expk: "공유도로 10km/h." },
+    ]
+  },
+];
+
+const STUDY_DATA = [...PHASE1_DATA, ...PHASE2_DATA, ...PHASE3_DATA, ...PHASE4_DATA];
+
+const COLORS = {
+  bg: "#0a0e17", card: "#131a2b", cardHover: "#1a2440",
+  accent: "#3b82f6", accentGlow: "rgba(59,130,246,0.25)",
+  correct: "#22c55e", correctBg: "rgba(34,197,94,0.12)",
+  wrong: "#ef4444", wrongBg: "rgba(239,68,68,0.12)",
+  text: "#e2e8f0", textDim: "#94a3b8", textMuted: "#64748b",
+  border: "#1e293b", yellow: "#eab308",
+  p1tag: "#3b82f6", p2tag: "#a855f7", p3tag: "#f59e0b", p4tag: "#ef4444",
+};
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function ProgressBar({ current, total, label }) {
+  const pct = total > 0 ? (current / total) * 100 : 0;
+  return (
+    <div style={{ marginBottom: 16 }}>
+      {label && <div style={{ fontSize: 12, color: COLORS.textDim, marginBottom: 4 }}>{label}</div>}
+      <div style={{ height: 6, background: COLORS.border, borderRadius: 3, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${COLORS.accent}, #60a5fa)`, borderRadius: 3, transition: "width 0.4s ease" }} />
+      </div>
+    </div>
+  );
+}
+
+function PhaseTag({ phase }) {
+  const colors = { 1: ["rgba(59,130,246,0.15)", COLORS.p1tag], 2: ["rgba(168,85,247,0.15)", COLORS.p2tag], 3: ["rgba(245,158,11,0.15)", COLORS.p3tag], 4: ["rgba(239,68,68,0.15)", COLORS.p4tag] };
+  const [bg, col] = colors[phase] || colors[1];
+  return (
+    <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: bg, color: col, letterSpacing: 0.5 }}>
+      P{phase}
+    </span>
+  );
+}
+
+function TopicCard({ topic, onClick, progress }) {
+  const total = topic.quiz.length;
+  const done = progress?.[topic.id] || 0;
+  return (
+    <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: COLORS.card, border: `1px solid ${COLORS.border}`, borderRadius: 12, cursor: "pointer", width: "100%", textAlign: "left", transition: "all 0.2s", color: COLORS.text, fontFamily: "inherit" }}
+    onMouseEnter={e => { e.currentTarget.style.background = COLORS.cardHover; e.currentTarget.style.borderColor = COLORS.accent; }}
+    onMouseLeave={e => { e.currentTarget.style.background = COLORS.card; e.currentTarget.style.borderColor = COLORS.border; }}>
+      <span style={{ fontSize: 26, lineHeight: 1 }}>{topic.icon}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+          <span style={{ fontWeight: 700, fontSize: 14 }}>{topic.title}</span>
+          <PhaseTag phase={topic.phase} />
+        </div>
+        <div style={{ fontSize: 11, color: COLORS.textDim }}>{topic.items.length} facts · {total} quiz</div>
+      </div>
+      {done > 0 && (
+        <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 6, background: done >= total ? COLORS.correctBg : COLORS.accentGlow, color: done >= total ? COLORS.correct : COLORS.accent }}>{done >= total ? "✓" : `${done}/${total}`}</span>
+      )}
+    </button>
+  );
+}
+
+function StudyView({ topic, onBack, onQuiz }) {
+  const [idx, setIdx] = useState(0);
+  const item = topic.items[idx];
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: COLORS.accent, cursor: "pointer", fontSize: 20, padding: 0, fontFamily: "inherit" }}>←</button>
+        <span style={{ fontSize: 22 }}>{topic.icon}</span>
+        <span style={{ fontWeight: 700, fontSize: 16, color: COLORS.text }}>{topic.title}</span>
+        <PhaseTag phase={topic.phase} />
+      </div>
+      <ProgressBar current={idx + 1} total={topic.items.length} label={`${idx + 1} / ${topic.items.length}`} />
+      <div style={{ background: COLORS.card, border: `1px solid ${COLORS.border}`, borderRadius: 14, padding: "20px 18px", marginBottom: 16 }}>
+        <div style={{ fontSize: 15, lineHeight: 1.7, color: COLORS.text, marginBottom: 12 }}>{item.en}</div>
+        <div style={{ fontSize: 14, lineHeight: 1.7, color: COLORS.accent, borderTop: `1px solid ${COLORS.border}`, paddingTop: 10 }}>{item.kr}</div>
+      </div>
+      <div style={{ display: "flex", gap: 10 }}>
+        <button disabled={idx === 0} onClick={() => setIdx(i => i - 1)}
+          style={{ flex: 1, padding: "12px 0", borderRadius: 10, border: `1px solid ${COLORS.border}`, background: COLORS.card, color: idx === 0 ? COLORS.textMuted : COLORS.text, cursor: idx === 0 ? "default" : "pointer", fontWeight: 600, fontSize: 14, fontFamily: "inherit" }}>← Prev</button>
+        {idx < topic.items.length - 1 ? (
+          <button onClick={() => setIdx(i => i + 1)}
+            style={{ flex: 1, padding: "12px 0", borderRadius: 10, border: "none", background: COLORS.accent, color: "#fff", cursor: "pointer", fontWeight: 600, fontSize: 14, fontFamily: "inherit" }}>Next →</button>
+        ) : (
+          <button onClick={onQuiz}
+            style={{ flex: 1, padding: "12px 0", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${COLORS.accent}, #8b5cf6)`, color: "#fff", cursor: "pointer", fontWeight: 700, fontSize: 14, fontFamily: "inherit" }}>🎯 Quiz 퀴즈</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function QuizEngine({ questions, title, onBack, onComplete, totalLabel }) {
+  const [idx, setIdx] = useState(0);
+  const [selected, setSelected] = useState(null);
+  const [score, setScore] = useState(0);
+  const [done, setDone] = useState(false);
+  const q = questions[idx];
+  const isCorrect = selected === q?.ans;
+
+  const handleSelect = (i) => { if (selected !== null) return; setSelected(i); if (i === q.ans) setScore(s => s + 1); };
+  const handleNext = () => {
+    if (idx + 1 >= questions.length) { setDone(true); if (onComplete) onComplete(score + (isCorrect ? 0 : 0)); }
+    else { setIdx(i => i + 1); setSelected(null); }
+  };
+
+  if (done) {
+    const pct = Math.round((score / questions.length) * 100);
+    const passed = pct >= 80;
+    return (
+      <div style={{ textAlign: "center", padding: "30px 0" }}>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>{passed ? "🎉" : "📚"}</div>
+        <div style={{ fontSize: 22, fontWeight: 700, color: COLORS.text, marginBottom: 6 }}>{passed ? "PASSED! 합격!" : "Keep studying! 더 공부하자!"}</div>
+        <div style={{ fontSize: 36, fontWeight: 800, color: passed ? COLORS.correct : COLORS.yellow }}>{score} / {questions.length}</div>
+        <div style={{ fontSize: 14, color: COLORS.textDim, marginBottom: 24 }}>{pct}% · Pass: 80%</div>
+        <button onClick={onBack} style={{ padding: "12px 24px", borderRadius: 10, border: `1px solid ${COLORS.border}`, background: COLORS.card, color: COLORS.text, cursor: "pointer", fontWeight: 600, fontSize: 14, fontFamily: "inherit" }}>← Home 홈으로</button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: COLORS.accent, cursor: "pointer", fontSize: 20, padding: 0, fontFamily: "inherit" }}>←</button>
+        <span style={{ fontWeight: 700, fontSize: 15, color: COLORS.text }}>{title}</span>
+        {totalLabel && <span style={{ marginLeft: "auto", fontSize: 12, color: COLORS.textDim, background: COLORS.card, padding: "4px 10px", borderRadius: 6 }}>{totalLabel}: {score}/{idx + (selected !== null ? 1 : 0)}</span>}
+      </div>
+      <ProgressBar current={idx + 1} total={questions.length} label={`${idx + 1} / ${questions.length}${q.topic ? ` · ${q.topic}` : ""}`} />
+      <div style={{ background: COLORS.card, border: `1px solid ${COLORS.border}`, borderRadius: 14, padding: "18px 16px", marginBottom: 12 }}>
+        <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.6, color: COLORS.text, marginBottom: 4 }}>{q.q}</div>
+        <div style={{ fontSize: 13, lineHeight: 1.5, color: COLORS.accent }}>{q.qk}</div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+        {q.opts.map((opt, i) => {
+          let bg = COLORS.card, brd = COLORS.border, col = COLORS.text;
+          if (selected !== null) {
+            if (i === q.ans) { bg = COLORS.correctBg; brd = COLORS.correct; col = COLORS.correct; }
+            else if (i === selected) { bg = COLORS.wrongBg; brd = COLORS.wrong; col = COLORS.wrong; }
+          }
+          return (<button key={i} onClick={() => handleSelect(i)} style={{ padding: "13px 14px", borderRadius: 10, border: `1.5px solid ${brd}`, background: bg, color: col, cursor: selected !== null ? "default" : "pointer", fontWeight: 600, fontSize: 14, textAlign: "left", fontFamily: "inherit", transition: "all 0.15s" }}>
+            <span style={{ marginRight: 10, opacity: 0.5 }}>{String.fromCharCode(65 + i)}</span>{opt}
+          </button>);
+        })}
+      </div>
+      {selected !== null && (
+        <div style={{ background: isCorrect ? COLORS.correctBg : COLORS.wrongBg, border: `1px solid ${isCorrect ? COLORS.correct : COLORS.wrong}`, borderRadius: 10, padding: "12px 14px", marginBottom: 12 }}>
+          <div style={{ fontWeight: 700, fontSize: 13, color: isCorrect ? COLORS.correct : COLORS.wrong, marginBottom: 3 }}>{isCorrect ? "✓ Correct! 정답!" : "✗ Incorrect 오답"}</div>
+          <div style={{ fontSize: 13, lineHeight: 1.5, color: COLORS.text }}>{q.exp}</div>
+          <div style={{ fontSize: 12, lineHeight: 1.5, color: COLORS.accent, marginTop: 2 }}>{q.expk}</div>
+        </div>
+      )}
+      {selected !== null && (
+        <button onClick={handleNext} style={{ width: "100%", padding: "13px 0", borderRadius: 10, border: "none", background: COLORS.accent, color: "#fff", cursor: "pointer", fontWeight: 700, fontSize: 14, fontFamily: "inherit" }}>
+          {idx + 1 >= questions.length ? "Results 결과" : "Next 다음 →"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function KeyNumbers({ onBack }) {
+  const nums = [
+    { num: "50", unit: "km/h", en: "Default speed in built-up areas", kr: "시가지 기본 제한속도" },
+    { num: "110", unit: "km/h", en: "WA maximum speed limit", kr: "서호주 최대 제한속도" },
+    { num: "100", unit: "km/h", en: "Max speed for Learner drivers", kr: "초보운전 최대 속도" },
+    { num: "40", unit: "km/h", en: "Speed passing emergency vehicles", kr: "긴급차량 통과 시 속도" },
+    { num: "0.00", unit: "BAC", en: "Novice driver alcohol limit", kr: "초보운전 혈중알코올 한도" },
+    { num: "0.05", unit: "BAC", en: "Full licence holder limit", kr: "정식 면허 한도" },
+    { num: "10", unit: "g", en: "Alcohol in 1 standard drink", kr: "표준 음주량 알코올" },
+    { num: "1", unit: "hr", en: "Time to eliminate 1 std drink", kr: "1잔 분해 시간" },
+    { num: "2", unit: "sec", en: "Following distance rule", kr: "차간 거리 규칙" },
+    { num: "4", unit: "sec", en: "Following distance (wet)", kr: "비올 때 차간 거리" },
+    { num: "200", unit: "m", en: "Low beam distance at night", kr: "야간 하향등 거리" },
+    { num: "1", unit: "m", en: "Cyclist overtaking clearance", kr: "자전거 추월 간격" },
+    { num: "4", unit: "m", en: "Max towing distance", kr: "견인 최대 거리" },
+    { num: "2", unit: "m", en: "White flag required if tow >", kr: "흰깃발 필요 견인 길이" },
+    { num: "10", unit: "m", en: "No parking near intersection", kr: "교차로 주차금지" },
+    { num: "20", unit: "m", en: "No parking near lights", kr: "신호등 교차로 주차금지" },
+    { num: "300", unit: "mm", en: "Parallel park kerb distance", kr: "평행주차 연석 거리" },
+    { num: "1.5", unit: "mm", en: "Min tyre tread depth", kr: "최소 타이어 깊이" },
+    { num: "50", unit: "hrs", en: "Required supervised driving", kr: "필수 지도 운전" },
+    { num: "5", unit: "hrs", en: "Min night driving hours", kr: "최소 야간 운전" },
+    { num: "4", unit: "pts", en: "Demerit limit L/P1", kr: "L/P1 벌점 한도" },
+    { num: "8", unit: "pts", en: "Demerit limit P2", kr: "P2 벌점 한도" },
+    { num: "12", unit: "pts", en: "Demerit limit Full licence", kr: "정식면허 벌점 한도" },
+    { num: "12", unit: "mo", en: "Good Behaviour Period", kr: "선행 기간" },
+    { num: "21", unit: "days", en: "Address change notification", kr: "주소변경 통보 기한" },
+    { num: "24", unit: "hrs", en: "Crash report to police", kr: "사고 경찰 신고 기한" },
+    { num: "3", unit: "mo", en: "PR licence conversion deadline", kr: "영주권 면허전환 기한" },
+    { num: "45", unit: "km/h", en: "Over limit = Anti-Hoon", kr: "Anti-Hoon 기준 초과속도" },
+    { num: "8", unit: "yrs", en: "Min age motorcycle pillion", kr: "오토바이 동승 최소연령" },
+    { num: "70", unit: "km/h", en: "Bus give-way speed limit", kr: "버스 양보 제한속도" },
+    { num: "6", unit: "mo", en: "P1 (red) minimum period", kr: "P1(빨간) 최소 기간" },
+    { num: "18", unit: "mo", en: "P2 (green) minimum period", kr: "P2(녹색) 최소 기간" },
+    { num: "2", unit: "yrs", en: "Total novice period minimum", kr: "전체 초보 기간 최소" },
+    { num: "40", unit: "km/h", en: "School zone speed limit", kr: "스쿨존 제한속도" },
+    { num: "10", unit: "km/h", en: "Shared zone speed limit", kr: "공유도로 제한속도" },
+    { num: "000", unit: "", en: "Emergency number (triple zero)", kr: "응급전화번호(트리플제로)" },
+    { num: "112", unit: "", en: "Mobile emergency (no SIM OK)", kr: "모바일 응급(SIM 없어도 가능)" },
+    { num: "45", unit: "m", en: "Stopping distance at 60km/h dry", kr: "60km/h 건조 정지거리" },
+    { num: "100", unit: "m", en: "Stopping distance at 100km/h dry", kr: "100km/h 건조 정지거리" },
+  ];
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: COLORS.accent, cursor: "pointer", fontSize: 20, padding: 0, fontFamily: "inherit" }}>←</button>
+        <span style={{ fontWeight: 700, fontSize: 17, color: COLORS.text }}>🔢 Key Numbers 핵심 숫자</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 8 }}>
+        {nums.map((n, i) => (
+          <div key={i} style={{ background: COLORS.card, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "10px 12px" }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 4 }}>
+              <span style={{ fontSize: 22, fontWeight: 800, color: COLORS.accent }}>{n.num}</span>
+              <span style={{ fontSize: 10, color: COLORS.textDim, fontWeight: 600 }}>{n.unit}</span>
+            </div>
+            <div style={{ fontSize: 11, lineHeight: 1.3, color: COLORS.text }}>{n.en}</div>
+            <div style={{ fontSize: 10, lineHeight: 1.3, color: COLORS.textMuted, marginTop: 1 }}>{n.kr}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const App = function App() {
+  const [view, setView] = useState("home");
+  const [topicId, setTopicId] = useState(null);
+  const [progress, setProgress] = useState({});
+  const [phaseFilter, setPhaseFilter] = useState(0);
+
+  const topic = STUDY_DATA.find(t => t.id === topicId);
+  const filtered = phaseFilter === 0 ? STUDY_DATA : STUDY_DATA.filter(t => t.phase === phaseFilter);
+
+  const handleQuizComplete = useCallback((tid, score) => {
+    setProgress(p => ({ ...p, [tid]: Math.max(p[tid] || 0, score) }));
+  }, []);
+
+  const totalQuiz = STUDY_DATA.reduce((s, t) => s + t.quiz.length, 0);
+  const totalDone = Object.values(progress).reduce((s, v) => s + v, 0);
+
+  const mockQuestions = useMemo(() => {
+    const pool = STUDY_DATA.flatMap(t => t.quiz.map(q => ({ ...q, topic: t.title })));
+    return shuffleArray(pool).slice(0, 30);
+  }, []);
+
+  const topicQuestions = useMemo(() => {
+    if (!topic) return [];
+    return shuffleArray(topic.quiz);
+  }, [topicId]);
+
+  const wrap = (children) => (
+    <div style={{ maxWidth: 520, margin: "0 auto", padding: "20px 16px", fontFamily: "'Segoe UI', system-ui, sans-serif", color: COLORS.text, background: COLORS.bg, minHeight: "100vh" }}>
+      {children}
+    </div>
+  );
+
+  if (view === "keynums") return wrap(<KeyNumbers onBack={() => setView("home")} />);
+
+  if (view === "mock") return wrap(
+    <QuizEngine questions={mockQuestions} title="🏁 Mock Exam 모의시험" onBack={() => setView("home")} totalLabel="Score 점수" />
+  );
+
+  if (view === "quiz" && topic) return wrap(
+    <QuizEngine questions={topicQuestions} title={`🎯 ${topic.title}`} onBack={() => setView("home")}
+      onComplete={(s) => handleQuizComplete(topic.id, s)} />
+  );
+
+  if (view === "study" && topic) return wrap(
+    <StudyView topic={topic} onBack={() => setView("home")} onQuiz={() => setView("quiz")} />
+  );
+
+  return (
+    <div style={{ maxWidth: 520, margin: "0 auto", padding: "20px 16px", fontFamily: "'Segoe UI', system-ui, sans-serif", color: COLORS.text, background: COLORS.bg, minHeight: "100vh" }}>
+      <div style={{ textAlign: "center", marginBottom: 20 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 3, color: COLORS.accent, marginBottom: 3 }}>DRIVE SAFE WA</div>
+        <div style={{ fontSize: 21, fontWeight: 800, color: COLORS.text, marginBottom: 2 }}>Learner's Permit Study</div>
+        <div style={{ fontSize: 12, color: COLORS.textDim }}>초보운전 면허 시험 준비 · {STUDY_DATA.length} topics · {totalQuiz} questions</div>
+      </div>
+
+      <ProgressBar current={totalDone} total={totalQuiz} label={`Overall 전체: ${totalDone}/${totalQuiz}`} />
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+        <button onClick={() => setView("mock")} style={{ flex: 1, padding: "13px 0", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${COLORS.accent}, #8b5cf6)`, color: "#fff", cursor: "pointer", fontWeight: 700, fontSize: 14, fontFamily: "inherit" }}>
+          🏁 Mock Exam 모의시험
+        </button>
+        <button onClick={() => setView("keynums")} style={{ flex: 1, padding: "13px 0", borderRadius: 10, border: `1px solid ${COLORS.border}`, background: COLORS.card, color: COLORS.text, cursor: "pointer", fontWeight: 700, fontSize: 14, fontFamily: "inherit" }}>
+          🔢 Key Numbers
+        </button>
+      </div>
+
+      <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+        {[{ v: 0, l: "All 전체" }, { v: 1, l: "P1" }, { v: 2, l: "P2" }, { v: 3, l: "P3" }, { v: 4, l: "P4" }].map(f => (
+          <button key={f.v} onClick={() => setPhaseFilter(f.v)} style={{
+            padding: "7px 14px", borderRadius: 8, border: `1px solid ${phaseFilter === f.v ? COLORS.accent : COLORS.border}`,
+            background: phaseFilter === f.v ? COLORS.accentGlow : COLORS.card,
+            color: phaseFilter === f.v ? COLORS.accent : COLORS.textDim,
+            cursor: "pointer", fontWeight: 600, fontSize: 12, fontFamily: "inherit",
+          }}>{f.l}</button>
+        ))}
+        <span style={{ marginLeft: "auto", alignSelf: "center", fontSize: 11, color: COLORS.textMuted }}>{filtered.length} topics</span>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {filtered.map(t => (
+          <TopicCard key={t.id} topic={t} progress={progress} onClick={() => { setTopicId(t.id); setView("study"); }} />
+        ))}
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: 24, fontSize: 10, color: COLORS.textMuted, lineHeight: 1.5 }}>
+        Based on WA Drive Safe Handbook (Feb 2026)<br/>Dept of Transport and Major Infrastructure<br/>
+        <a href="https://www.transport.wa.gov.au/licensing/road-rules-theory-test-quiz.asp" target="_blank" rel="noopener" style={{ color: COLORS.accent, textDecoration: "none", fontWeight: 600 }}>
+          🔗 Official WA Practice Quiz 공식 연습 퀴즈
+        </a>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+<script>
+// Register service worker for offline caching
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
